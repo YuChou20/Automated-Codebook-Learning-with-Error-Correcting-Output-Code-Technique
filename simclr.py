@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import numpy as np
 
 import torch
 import torch.nn.functional as F
@@ -8,6 +9,8 @@ from torch.cuda.amp import GradScaler, autocast
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from utils import save_config_file, accuracy, save_checkpoint
+from torchvision.transforms import Resize
+import faiss
 
 torch.manual_seed(0)
 
@@ -17,11 +20,48 @@ class SimCLR(object):
     def __init__(self, *args, **kwargs):
         self.args = kwargs['args']
         self.model = kwargs['model'].to(self.args.device)
+        self.model.backbone.avgpool.register_forward_hook(self.hook)
+        # load weight if need
+        self.model.load_state_dict(torch.load('./runs/cifar10-1000-lars-v2-2/checkpoint_1000.pth.tar'))
+
         self.optimizer = kwargs['optimizer']
         self.scheduler = kwargs['scheduler']
+        self.csw = kwargs['csw']
+        self.n_neighbors = kwargs['n_neighbors']+1
+        self.activation = torch.empty([1, 1]) 
         self.writer = SummaryWriter()
         logging.basicConfig(filename=os.path.join(self.writer.log_dir, 'training.log'), level=logging.DEBUG)
         self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
+
+    def hook(self, module, input, output):
+        self.activation = output.detach()
+        self.activation = self.activation.view([512,2048])
+
+    def column_seperation_loss(self, features):
+        os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+        # consor data type from tensor to np array
+        np_features = features.detach().cpu().numpy().astype('float32')
+        # the feature need to transpose and convert data distribution to continuous
+        np_features = np.ascontiguousarray(np_features.T)
+        # cosine similarity search using faiss tool
+        vector_dim = np_features.shape[1]
+        faiss.normalize_L2(np_features)
+        
+        nlist = 100
+        quantizer = faiss.IndexFlatL2(vector_dim) 
+        index = faiss.IndexIVFFlat(quantizer, vector_dim, nlist, faiss.METRIC_INNER_PRODUCT) 
+        index.nprobe = 10
+        index.train(np_features) 
+        index.add(np_features)
+        D, I = index.search(np_features, self.n_neighbors)
+
+        # print(D[:,1].sum()*self.csw)
+        # return torch.tensor(D[:,1].sum()*self.csw, dtype=torch.floassu3t32, device=torch.device('cuda:0'))
+    
+        print(D[:,1:].sum()/ (np_features.shape[0]*self.n_neighbors))
+        return torch.tensor(D[:,1:].sum()/ (np_features.shape[0]*self.n_neighbors), dtype=torch.float32, device=torch.device('cuda:0'))
+
+
 
     def info_nce_loss(self, features):
 
@@ -53,7 +93,7 @@ class SimCLR(object):
 
         logits = logits / self.args.temperature
         return logits, labels
-
+    
     def train(self, train_loader):
 
         scaler = GradScaler(enabled=self.args.fp16_precision)
@@ -64,17 +104,22 @@ class SimCLR(object):
         n_iter = 0
         logging.info(f"Start SimCLR training for {self.args.epochs} epochs.")
         logging.info(f"Training with gpu: {self.args.disable_cuda}.")
-
+        # print(self.model)
         for epoch_counter in range(self.args.epochs):
             for images, _ in tqdm(train_loader):
                 images = torch.cat(images, dim=0)
-
                 images = images.to(self.args.device)
 
                 with autocast(enabled=self.args.fp16_precision):
                     features = self.model(images)
+                    csl = self.column_seperation_loss(self.activation)
                     logits, labels = self.info_nce_loss(features)
-                    loss = self.criterion(logits, labels)
+                    infoNCE = self.criterion(logits, labels)
+                    loss = infoNCE.add(csl)
+                    # print('csl', csl)
+                    # print('infoNCE', infoNCE)
+                    # print('loss', loss)
+
 
                 self.optimizer.zero_grad()
 
