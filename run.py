@@ -23,14 +23,8 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                          ' (default: resnet50)')
 parser.add_argument('-j', '--workers', default=12, type=int, metavar='N',
                     help='number of data loading workers (default: 32)')
-parser.add_argument('--epochs', default=200, type=int, metavar='N',
-                    help='number of total epochs to run')
-parser.add_argument('-b', '--batch-size', default=256, type=int,
-                    metavar='N',
-                    help='mini-batch size (default: 256), this is the total '
-                         'batch size of all GPUs on the current node when '
-                         'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--lr', '--learning-rate', default=0.0003, type=float,
+
+parser.add_argument('--lr', '--learning-rate', default=1.0, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--wd', '--weight-decay', default=1e-4, type=float,
                     metavar='W', help='weight decay (default: 1e-4)',
@@ -44,16 +38,29 @@ parser.add_argument('--fp16-precision', action='store_true',
 
 parser.add_argument('--out_dim', default=128, type=int,
                     help='feature dimension (default: 128)')
-parser.add_argument('--log-every-n-steps', default=200, type=int,
-                    help='Log every n steps')
-parser.add_argument('--temperature', default=0.5, type=float,
-                    help='softmax temperature (default: 0.07)')
+
 parser.add_argument('--n-views', default=2, type=int, metavar='N',
                     help='Number of views for contrastive learning training.')
 parser.add_argument('--gpu-index', default=0, type=int, help='Gpu index.')
 
-parser.add_argument('--csw', default=0.01, type=float, help='column seperation loss weight.')
-parser.add_argument('--n_neighbors', default=100, type=int, help='n neighbor for consine similarity search.')
+parser.add_argument('-b', '--batch-size', default=256, type=int,
+                    metavar='N',
+                    help='mini-batch size (default: 256), this is the total '
+                         'batch size of all GPUs on the current node when '
+                         'using Data Parallel or Distributed Data Parallel')
+parser.add_argument('--log-every-n-steps', default=200, type=int,
+                    help='Log every n steps')
+parser.add_argument('--temperature', default=0.5, type=float,
+                    help='softmax temperature (default: 0.07)')
+parser.add_argument('--epochs', default=200, type=int, metavar='N',
+                    help='number of total epochs to run')
+parser.add_argument('--model_version', default=4, type=int, help='Model version.'
+                    'Version 2: Replace conv 7x7 with conv 3x3, and remove first max pooling.'
+                    'Version 3: Add average column spearation loss.'
+                    'Version 4: Column separation loss with csw.'
+                    'Version 5: ')
+parser.add_argument('--csw', default=0.005, type=float, help='column seperation loss weight.')
+parser.add_argument('--n_neighbors', default=2048, type=int, help='n neighbor for consine similarity search.')
 
 def main():
     import warnings
@@ -84,7 +91,7 @@ def main():
     optimizer = LARS(
         model.parameters(),
         # lr=0.3*args.batch_size/256,
-        lr=1.0,
+        lr=args.lr,
         weight_decay=args.weight_decay,
         exclude_from_weight_decay=["batch_normalization", "bias"],
     )
@@ -93,7 +100,7 @@ def main():
 
     #  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
     with torch.cuda.device(args.gpu_index):
-        simclr = SimCLR(model=model, optimizer=optimizer, scheduler=scheduler, n_neighbors = args.n_neighbors, csw = args.csw, args=args)
+        simclr = SimCLR(model=model, optimizer=optimizer, scheduler=scheduler, n_neighbors = args.n_neighbors, csw = args.csw, args=args, model_version=args.model_version)
         simclr.train(train_loader)
 
 

@@ -11,6 +11,7 @@ from tqdm import tqdm
 from utils import save_config_file, accuracy, save_checkpoint
 from torchvision.transforms import Resize
 import faiss
+import copy
 
 torch.manual_seed(0)
 
@@ -20,18 +21,47 @@ class SimCLR(object):
     def __init__(self, *args, **kwargs):
         self.args = kwargs['args']
         self.model = kwargs['model'].to(self.args.device)
-        self.model.backbone.avgpool.register_forward_hook(self.hook)
-        # load weight if need
-        self.model.load_state_dict(torch.load('./runs/cifar10-1000-lars-v2-2/checkpoint_1000.pth.tar'))
 
+        # self.model1 = copy.deepcopy(self.model)
+        # # load weight if need
+        # self.load_model_weight('./runs/cifar10-1000-lars-v2-2/checkpoint_1000.pth.tar')
+        # self.model2 = copy.deepcopy(self.model)
+        # self.compare_models(self.model1, self.model2)
+
+        self.model.backbone.avgpool.register_forward_hook(self.hook)
         self.optimizer = kwargs['optimizer']
         self.scheduler = kwargs['scheduler']
         self.csw = kwargs['csw']
-        self.n_neighbors = kwargs['n_neighbors']+1
+        self.model_version =  kwargs['model_version']
+        # The simensions of hidden layer activation only 2048 
+        self.n_neighbors = kwargs['n_neighbors']+1 if kwargs['n_neighbors'] < 2048 else 2048
         self.activation = torch.empty([1, 1]) 
         self.writer = SummaryWriter()
         logging.basicConfig(filename=os.path.join(self.writer.log_dir, 'training.log'), level=logging.DEBUG)
         self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
+
+    def compare_models(self, model_1, model_2):
+        models_differ = 0
+        for key_item_1, key_item_2 in zip(model_1.state_dict().items(), model_2.state_dict().items()):
+            if torch.equal(key_item_1[1], key_item_2[1]):
+                pass
+            else:
+                models_differ += 1
+                if (key_item_1[0] == key_item_2[0]):
+                    print('Mismtach found at', key_item_1[0])
+                else:
+                    raise Exception
+        if models_differ == 0:
+            print('Models match perfectly! :)')
+        else:
+            print('Models different!')
+
+    def load_model_weight(self, path):
+        print('load weight file from {0}'.format(path))
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        checkpoint = torch.load(path, map_location=device)
+        state_dict = checkpoint['state_dict']
+        self.model.load_state_dict(state_dict, strict=False)
 
     def hook(self, module, input, output):
         self.activation = output.detach()
@@ -50,16 +80,17 @@ class SimCLR(object):
         nlist = 100
         quantizer = faiss.IndexFlatL2(vector_dim) 
         index = faiss.IndexIVFFlat(quantizer, vector_dim, nlist, faiss.METRIC_INNER_PRODUCT) 
-        index.nprobe = 10
+        index.nprobe = 100
         index.train(np_features) 
         index.add(np_features)
         D, I = index.search(np_features, self.n_neighbors)
-
-        # print(D[:,1].sum()*self.csw)
-        # return torch.tensor(D[:,1].sum()*self.csw, dtype=torch.floassu3t32, device=torch.device('cuda:0'))
-    
-        print(D[:,1:].sum()/ (np_features.shape[0]*self.n_neighbors))
-        return torch.tensor(D[:,1:].sum()/ (np_features.shape[0]*self.n_neighbors), dtype=torch.float32, device=torch.device('cuda:0'))
+        if self.model_version==3:
+            loss = D[:,1:].sum()/ (np_features.shape[0]*self.n_neighbors)
+        elif self.model_version==4:
+            loss = D[:,1:].sum()*self.csw
+        print('csl: ', loss)
+        return torch.tensor(loss, dtype=torch.float32, device=torch.device('cuda:0'))
+        
 
 
 
@@ -116,10 +147,7 @@ class SimCLR(object):
                     logits, labels = self.info_nce_loss(features)
                     infoNCE = self.criterion(logits, labels)
                     loss = infoNCE.add(csl)
-                    # print('csl', csl)
-                    # print('infoNCE', infoNCE)
-                    # print('loss', loss)
-
+                    # loss = infoNCE
 
                 self.optimizer.zero_grad()
 
