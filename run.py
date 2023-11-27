@@ -4,6 +4,7 @@ import torch.backends.cudnn as cudnn
 from torchvision import models
 from data_aug.contrastive_learning_dataset import ContrastiveLearningDataset
 from models.resnet_simclr import ResNetSimCLR
+from models.resnet_ecoc_simclr import ResNetECOCSimCLR
 from simclr import SimCLR
 from lars import LARS
 
@@ -48,11 +49,11 @@ parser.add_argument('-b', '--batch-size', default=256, type=int,
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--log-every-n-steps', default=1000, type=int,
+parser.add_argument('--log-every-n-steps', default=1, type=int,
                     help='Log every n steps')
 parser.add_argument('--temperature', default=0.5, type=float,
                     help='softmax temperature (default: 0.07)')
-parser.add_argument('--epochs', default=1000, type=int, metavar='N',
+parser.add_argument('--epochs', default=1, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--model_version', default=2, type=int, help='Model version.'
                     'Version 2: Replace conv 7x7 with conv 3x3, and remove first max pooling.'
@@ -85,7 +86,10 @@ def main():
         train_dataset, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=True, drop_last=True)
 
-    model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
+    if args.model_version == 5:
+        model = ResNetECOCSimCLR(base_model=args.arch, out_dim=args.out_dim)
+    else:
+        model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
 
     #optimizer = torch.optim.Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
     optimizer = LARS(

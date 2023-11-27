@@ -28,6 +28,7 @@ class SimCLR(object):
         # self.load_model_weight('./runs/cifar10-1000-lars-v2-2/checkpoint_1000.pth.tar')
         # self.model2 = copy.deepcopy(self.model)
         # self.compare_models(self.model1, self.model2)
+
         print(self.model)
         if self.model_version == 5:
             self.model.ecoc_encoder.register_forward_hook(self.hook)
@@ -89,7 +90,7 @@ class SimCLR(object):
         index.train(np_features) 
         index.add(np_features)
         D, I = index.search(np_features, self.n_neighbors)
-        print(D[0,1:])
+
         if self.model_version==3:
             loss = D[:,1:].sum()/ (np_features.shape[0]*self.n_neighbors)
         elif self.model_version==4 or 5:
@@ -131,7 +132,7 @@ class SimCLR(object):
         return logits, labels
     
     def train(self, train_loader):
-        # print(self.model)
+        print(self.model)
         scaler = GradScaler(enabled=self.args.fp16_precision)
 
         # save config file
@@ -148,13 +149,13 @@ class SimCLR(object):
 
                 with autocast(enabled=self.args.fp16_precision):
                     features = self.model(images)
+                    logits, labels = self.info_nce_loss(features)
                     infoNCE = self.criterion(logits, labels)
                     if self.model_version == 2:
                         loss = infoNCE
                     else:
                         # calculate csl
                         csl = self.column_seperation_loss(self.activation)
-                        logits, labels = self.info_nce_loss(features)
                         loss = infoNCE.add(csl)
 
                 self.optimizer.zero_grad()
