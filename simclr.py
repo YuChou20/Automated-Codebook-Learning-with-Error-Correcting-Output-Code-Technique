@@ -20,6 +20,7 @@ class SimCLR(object):
 
     def __init__(self, *args, **kwargs):
         self.args = kwargs['args']
+        self.model_version =  kwargs['model_version']
         self.model = kwargs['model'].to(self.args.device)
 
         # self.model1 = copy.deepcopy(self.model)
@@ -27,13 +28,17 @@ class SimCLR(object):
         # self.load_model_weight('./runs/cifar10-1000-lars-v2-2/checkpoint_1000.pth.tar')
         # self.model2 = copy.deepcopy(self.model)
         # self.compare_models(self.model1, self.model2)
+        print(self.model)
+        if self.model_version == 5:
+            self.model.ecoc_encoder.register_forward_hook(self.hook)
+        else:
+            self.model.backbone.avgpool.register_forward_hook(self.hook)
 
-        self.model.backbone.avgpool.register_forward_hook(self.hook)
         self.optimizer = kwargs['optimizer']
         self.scheduler = kwargs['scheduler']
         self.csw = kwargs['csw']
-        self.model_version =  kwargs['model_version']
-        # The simensions of hidden layer activation only 2048 
+        
+        # The simensions of hidden layer activation only 2048
         self.n_neighbors = kwargs['n_neighbors']+1 if kwargs['n_neighbors'] < 2048 else 2048
         self.activation = torch.empty([1, 1]) 
         self.writer = SummaryWriter()
@@ -84,14 +89,14 @@ class SimCLR(object):
         index.train(np_features) 
         index.add(np_features)
         D, I = index.search(np_features, self.n_neighbors)
+        print(D[0,1:])
         if self.model_version==3:
             loss = D[:,1:].sum()/ (np_features.shape[0]*self.n_neighbors)
-        elif self.model_version==4:
+        elif self.model_version==4 or 5:
             loss = D[:,1:].sum()*self.csw
         print('csl: ', loss)
         return torch.tensor(loss, dtype=torch.float32, device=torch.device('cuda:0'))
         
-
 
 
     def info_nce_loss(self, features):
@@ -126,7 +131,7 @@ class SimCLR(object):
         return logits, labels
     
     def train(self, train_loader):
-
+        # print(self.model)
         scaler = GradScaler(enabled=self.args.fp16_precision)
 
         # save config file
@@ -143,11 +148,14 @@ class SimCLR(object):
 
                 with autocast(enabled=self.args.fp16_precision):
                     features = self.model(images)
-                    csl = self.column_seperation_loss(self.activation)
-                    logits, labels = self.info_nce_loss(features)
                     infoNCE = self.criterion(logits, labels)
-                    loss = infoNCE.add(csl)
-                    # loss = infoNCE
+                    if self.model_version == 2:
+                        loss = infoNCE
+                    else:
+                        # calculate csl
+                        csl = self.column_seperation_loss(self.activation)
+                        logits, labels = self.info_nce_loss(features)
+                        loss = infoNCE.add(csl)
 
                 self.optimizer.zero_grad()
 

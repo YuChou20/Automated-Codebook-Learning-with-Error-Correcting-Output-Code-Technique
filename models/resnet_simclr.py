@@ -2,7 +2,7 @@ import torch.nn as nn
 import torchvision.models as models
 
 from exceptions.exceptions import InvalidBackboneError
-
+from collections import OrderedDict
 
 class ResNetSimCLR(nn.Module):
 
@@ -16,8 +16,15 @@ class ResNetSimCLR(nn.Module):
         # Customize for CIFAR10. Replace conv 7x7 with conv 3x3, and remove first max pooling.
         self.backbone.conv1 = nn.Conv2d(3, 64, 3, 1, 1, bias=False)
         self.backbone.maxpool = nn.Identity()
-        # add mlp projection head
-        self.backbone.fc = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU(), self.backbone.fc)
+        # # add ecoc encoder
+        # self.backbone.ecoc_encoder = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU())
+        # # add mlp projection head
+        self.backbone.fc = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU(inplace=True), self.backbone.fc)
+
+        # version 5 & 6
+        # self.backbone.fc = nn.Identity(nn.Linear(dim_mlp, dim_mlp))
+        # self.ecoc_encoder = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU(inplace=True))
+        # self.fc = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU(inplace=True), nn.Linear(dim_mlp, 128))
         # print(self.backbone)
 
     def _get_basemodel(self, model_name):
@@ -31,3 +38,7 @@ class ResNetSimCLR(nn.Module):
 
     def forward(self, x):
         return self.backbone(x)
+        # x = self.backbone(x)
+        # x = self.ecoc_encoder(x)
+        # x = self.fc(x)
+        # return x

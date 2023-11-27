@@ -48,18 +48,18 @@ parser.add_argument('-b', '--batch-size', default=256, type=int,
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--log-every-n-steps', default=200, type=int,
+parser.add_argument('--log-every-n-steps', default=1000, type=int,
                     help='Log every n steps')
 parser.add_argument('--temperature', default=0.5, type=float,
                     help='softmax temperature (default: 0.07)')
-parser.add_argument('--epochs', default=200, type=int, metavar='N',
+parser.add_argument('--epochs', default=1000, type=int, metavar='N',
                     help='number of total epochs to run')
-parser.add_argument('--model_version', default=4, type=int, help='Model version.'
+parser.add_argument('--model_version', default=2, type=int, help='Model version.'
                     'Version 2: Replace conv 7x7 with conv 3x3, and remove first max pooling.'
                     'Version 3: Add average column spearation loss.'
                     'Version 4: Column separation loss with csw.'
                     'Version 5: ')
-parser.add_argument('--csw', default=0.005, type=float, help='column seperation loss weight.')
+parser.add_argument('--csw', default=0.05, type=float, help='column seperation loss weight.')
 parser.add_argument('--n_neighbors', default=2048, type=int, help='n neighbor for consine similarity search.')
 
 def main():
