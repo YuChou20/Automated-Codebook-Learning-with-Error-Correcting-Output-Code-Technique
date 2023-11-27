@@ -15,7 +15,7 @@ import argparse
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 parser.add_argument('-folder_name', default='cifar10-200-lars-v5-2',
                     help='model file name')
-parser.add_argument('--epochs', default=2, type=int, metavar='N',
+parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
 
 def get_stl10_data_loaders(download, shuffle=False, batch_size=256):
@@ -68,11 +68,11 @@ if __name__ == '__main__':
 
   args = parser.parse_args()
   device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+  # Load config.yml
   with open(os.path.join('./runs/{0}/config.yml'.format(args.folder_name))) as file:
     config = yaml.load(file, Loader=yaml.Loader)
-
   cp_epoch = (4-len(str(config.epochs)))*'0' + str(config.epochs)
-
 
   # Get baseline model arch
   if config.arch == 'resnet18':
@@ -102,8 +102,6 @@ if __name__ == '__main__':
     state_dict['ecoc_encoder.0.weight'] = state_dict_cpy['ecoc_encoder.0.weight']
     state_dict['ecoc_encoder.0.bias'] = state_dict_cpy['ecoc_encoder.0.bias']
 
-    # log = model.load_state_dict(state_dict, strict=False)
-    # assert log.missing_keys == ['head.weight', 'head.bias']
   else:
     for k in list(state_dict.keys()):
       if k.startswith('backbone.'):
@@ -111,9 +109,6 @@ if __name__ == '__main__':
           # remove prefix
           state_dict[k[len("backbone."):]] = state_dict[k]
       del state_dict[k]
-
-    # log = model.load_state_dict(state_dict, strict=False)
-    # assert log.missing_keys == ['fc.weight', 'fc.bias']
 
   # Load dataset to loder 
   if config.dataset_name == 'cifar10':
