@@ -16,7 +16,7 @@ import logging
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 parser.add_argument('-folder_name', default='cifar10-200-lars-v4-8',
                     help='model file name')
-parser.add_argument('--epochs', default=1, type=int, metavar='N',
+parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
 
 def get_stl10_data_loaders(download, shuffle=False, batch_size=256):
