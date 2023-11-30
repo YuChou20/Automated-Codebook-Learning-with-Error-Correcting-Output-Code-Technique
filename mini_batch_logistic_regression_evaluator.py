@@ -12,9 +12,10 @@ from torchvision import datasets
 import torch.nn as nn
 import argparse
 import logging
+from models.resnet_ecoc_simclr import ResNetECOCSimCLR
 
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
-parser.add_argument('-folder_name', default='cifar10-200-lars-v4-8',
+parser.add_argument('-folder_name', default='cifar10-1000-lars-v3-1',
                     help='model file name')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
@@ -67,6 +68,7 @@ if __name__ == '__main__':
   device = 'cuda' if torch.cuda.is_available() else 'cpu'
   print("Using device:", device)
   args = parser.parse_args()
+  # Load config.yml
   with open(os.path.join('./runs/{0}/config.yml'.format(args.folder_name))) as file:
     config = yaml.load(file, Loader=yaml.Loader)
 
@@ -76,17 +78,22 @@ if __name__ == '__main__':
   if config.arch == 'resnet18':
     model = torchvision.models.resnet18(pretrained=False, num_classes=10).to(device)
   elif config.arch == 'resnet50':
-    model = torchvision.models.resnet50(pretrained=False, num_classes=10).to(device)
-    dim_mlp = model.fc.in_features
-    model.conv1 = nn.Conv2d(3, 64, 3, 1, 1, bias=False)
-    model.maxpool = nn.Identity()
     if config.model_version == 5:
-      model.ecoc_encoder = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU())
-      model.fc = nn.Identity(nn.Linear(dim_mlp, dim_mlp))
-      model.c_head = nn.Linear(dim_mlp, 10)
+      model = ResNetECOCSimCLR(base_model=config.arch, out_dim=10)
+      dim_mlp = model.ecoc_encoder[0].out_features
+      model.fc = nn.Linear(dim_mlp, 10)
+    else:
+      model = torchvision.models.resnet50(pretrained=False, num_classes=10).to(device)
+      dim_mlp = model.fc.in_features
+      model.conv1 = nn.Conv2d(3, 64, 3, 1, 1, bias=False)
+      model.maxpool = nn.Identity()
+    print(model)
+
+
 
   model.cuda()
-
+  # print(model)
+  # Load weight file
   checkpoint = torch.load('./runs/{0}/checkpoint_{1}.pth.tar'.format(args.folder_name, cp_epoch), map_location=device)
   state_dict = checkpoint['state_dict']
   state_dict_cpy = state_dict.copy()
@@ -94,13 +101,8 @@ if __name__ == '__main__':
   # remove prefix
   if config.model_version == 5:
     for k in list(state_dict.keys()):
-      if k.startswith('backbone'):
-        state_dict[k[len("backbone."):]] = state_dict[k]
-      del state_dict[k]
-
-    state_dict['ecoc_encoder.0.weight'] = state_dict_cpy['ecoc_encoder.0.weight']
-    state_dict['ecoc_encoder.0.bias'] = state_dict_cpy['ecoc_encoder.0.bias']
-
+      if k.startswith('fc.'):
+        del state_dict[k]
   else:
     for k in list(state_dict.keys()):
       if k.startswith('backbone.'):
@@ -110,18 +112,16 @@ if __name__ == '__main__':
       del state_dict[k]
 
   log = model.load_state_dict(state_dict, strict=False)
-  if config.model_version == 5:
-    assert log.missing_keys == ['c_head.weight', 'c_head.bias']
-  else:
-    assert log.missing_keys == ['fc.weight', 'fc.bias']
+  assert log.missing_keys == ['fc.weight', 'fc.bias']
 
+  # Load dataset to loader
   if config.dataset_name == 'cifar10':
     train_loader, test_loader = get_cifar10_data_loaders(download=True)
   elif config.dataset_name == 'stl10':
     train_loader, test_loader = get_stl10_data_loaders(download=True)
   print("Dataset:", config.dataset_name)
 
-  requires_grad_list = ['ecoc_encoder.0.weight', 'ecoc_encoder.0.bias', 'c_head.weight', 'c_head.bias'] if config.model_version == 5 else ['fc.weight', 'fc.bias']
+  requires_grad_list = ['ecoc_encoder.0.weight', 'ecoc_encoder.0.bias', 'fc.weight', 'fc.bias'] if config.model_version == 5 else ['fc.weight', 'fc.bias']
 
   # freeze all layers but the last fc
   for name, param in model.named_parameters():
@@ -131,8 +131,9 @@ if __name__ == '__main__':
       else:
           param.requires_grad = True
   parameters = list(filter(lambda p: p.requires_grad, model.parameters()))
-  assert len(parameters) == len(requires_grad_list)  # fc.weight, fc.bias
+  assert len(parameters) == len(requires_grad_list)
 
+  # Assign some model settings
   optimizer = torch.optim.Adam(model.parameters(), lr=3e-4, weight_decay=0.0008)
   criterion = torch.nn.CrossEntropyLoss().to(device)
 
@@ -146,6 +147,10 @@ if __name__ == '__main__':
 
       logits = model(x_batch)
       loss = criterion(logits, y_batch)
+
+      # if config.model_version == 5:
+      #   loss.requires_grad = True
+
       top1 = accuracy(logits, y_batch, topk=(1,))
       top1_train_accuracy += top1[0]
 
@@ -170,4 +175,3 @@ if __name__ == '__main__':
     top5_accuracy /= (counter + 1)
     logging.info(f"Epoch {epoch}\tTop1 Train accuracy {top1_train_accuracy.item()}\tTop1 Test accuracy: {top1_accuracy.item()}\tTop5 test acc: {top5_accuracy.item()}")
     print(f"Epoch {epoch}\tTop1 Train accuracy {top1_train_accuracy.item()}\tTop1 Test accuracy: {top1_accuracy.item()}\tTop5 test acc: {top5_accuracy.item()}")
-

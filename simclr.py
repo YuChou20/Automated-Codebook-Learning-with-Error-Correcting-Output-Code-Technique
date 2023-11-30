@@ -29,7 +29,6 @@ class SimCLR(object):
         # self.model2 = copy.deepcopy(self.model)
         # self.compare_models(self.model1, self.model2)
 
-        print(self.model)
         if self.model_version == 5:
             self.model.ecoc_encoder.register_forward_hook(self.hook)
         else:
@@ -83,10 +82,10 @@ class SimCLR(object):
         vector_dim = np_features.shape[1]
         faiss.normalize_L2(np_features)
         
-        nlist = 100
+        nlist = 50
         quantizer = faiss.IndexFlatL2(vector_dim) 
         index = faiss.IndexIVFFlat(quantizer, vector_dim, nlist, faiss.METRIC_INNER_PRODUCT) 
-        index.nprobe = 100
+        index.nprobe = 50
         index.train(np_features) 
         index.add(np_features)
         D, I = index.search(np_features, self.n_neighbors)
@@ -95,7 +94,6 @@ class SimCLR(object):
             loss = D[:,1:].sum()/ (np_features.shape[0]*self.n_neighbors)
         elif self.model_version==4 or 5:
             loss = D[:,1:].sum()*self.csw
-        print('csl: ', loss)
         return torch.tensor(loss, dtype=torch.float32, device=torch.device('cuda:0'))
         
 
@@ -157,6 +155,9 @@ class SimCLR(object):
                         # calculate csl
                         csl = self.column_seperation_loss(self.activation)
                         loss = infoNCE.add(csl)
+
+                        # Use for baseline model
+                        # loss = infoNCE
 
                 self.optimizer.zero_grad()
 
