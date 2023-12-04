@@ -49,19 +49,22 @@ parser.add_argument('-b', '--batch-size', default=256, type=int,
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
                          'using Data Parallel or Distributed Data Parallel')
-parser.add_argument('--log-every-n-steps', default=1000, type=int,
+parser.add_argument('--log-every-n-steps', default=1, type=int,
                     help='Log every n steps')
 parser.add_argument('--temperature', default=0.5, type=float,
                     help='softmax temperature (default: 0.07)')
-parser.add_argument('--epochs', default=1000, type=int, metavar='N',
+parser.add_argument('--epochs', default=2000, type=int, metavar='N',
                     help='number of total epochs to run')
-parser.add_argument('--model_version', default=5, type=int, help='Model version.'
+parser.add_argument('--model_version', default=4, type=int, help='Model version.'
                     'Version 2: Replace conv 7x7 with conv 3x3, and remove first max pooling.'
                     'Version 3: Add average column spearation loss.'
                     'Version 4: Column separation loss with csw.'
-                    'Version 5: ')
+                    'Version 5: Add ECOC encoder layer.')
 parser.add_argument('--csw', default=0.001, type=float, help='column seperation loss weight.')
 parser.add_argument('--n_neighbors', default=2048, type=int, help='n neighbor for consine similarity search.')
+parser.add_argument('--save_weight_every_n_steps', default=50, type=int,
+                    help='Save weight every n steps')
+
 
 def main():
     import warnings
@@ -104,7 +107,7 @@ def main():
 
     #  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
     with torch.cuda.device(args.gpu_index):
-        simclr = SimCLR(model=model, optimizer=optimizer, scheduler=scheduler, n_neighbors = args.n_neighbors, csw = args.csw, args=args, model_version=args.model_version)
+        simclr = SimCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
         simclr.train(train_loader)
 
 
