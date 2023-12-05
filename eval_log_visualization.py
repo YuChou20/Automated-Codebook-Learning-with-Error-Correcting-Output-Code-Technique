@@ -17,9 +17,9 @@ def get_acc_array(filepath):
 
 def main():
     index = [i for i in range(1,201)] 
-    filepath = './runs/{0}/eval.log'.format('cifar10-1000-lars-v2-3')
+    filepath = './runs/{0}/eval.log'.format('cifar10-1000-lars-v5-1')
     acc = get_acc_array(filepath)
-    filepath = './runs/{0}/eval.log'.format('cifar10-1000-lars-v4-2')
+    filepath = './runs/{0}/eval.log'.format('cifar10-1000-lars-v5-baseline-1')
     acc2 = get_acc_array(filepath)
 
     print(acc)
@@ -29,7 +29,7 @@ def main():
     plt.plot(index, acc2, 'b-')
     plt.legend(['v5', 'v5-baseline'])
     plt.xlabel('Epoch')
-    plt.ylabel('Loss')
+    plt.ylabel('Top1 Acc')
     plt.show()
     # plt.plot(index, acc, color='b')
     # plt.xlabel('epoch') # 設定x軸標題
