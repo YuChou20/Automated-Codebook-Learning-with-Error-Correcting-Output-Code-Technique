@@ -44,7 +44,11 @@ parser.add_argument('--n-views', default=2, type=int, metavar='N',
                     help='Number of views for contrastive learning training.')
 parser.add_argument('--gpu-index', default=0, type=int, help='Gpu index.')
 
-parser.add_argument('-b', '--batch-size', default=256, type=int,
+parser.add_argument('--load_weight', default=True, type=bool,
+                    help='Load weight if True')
+parser.add_argument('--weight_path', metavar='DIR', default='./runs/test/checkpoint_2000.pth.tar',
+                    help='path to dataset')
+parser.add_argument('-b', '--batch_size', default=128, type=int,
                     metavar='N',
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '

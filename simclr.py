@@ -22,14 +22,13 @@ class SimCLR(object):
         self.args = kwargs['args']
         self.model_version =  self.args.model_version#kwargs['model_version']
         self.model = kwargs['model'].to(self.args.device)
-        # self.model1 = copy.deepcopy(self.model)
-        # # load weight if need
-        # self.load_model_weight('./runs/cifar10-1000-lars-v2-2/checkpoint_1000.pth.tar')
-        # self.model2 = copy.deepcopy(self.model)
-        # self.compare_models(self.model1, self.model2)
+        if self.args.load_weight:
+            checkpoint = torch.load(self.args.weight_path, map_location=self.args.device)
+            state_dict = checkpoint['state_dict']
+            self.model.load_state_dict(state_dict, strict=False)
 
         if self.model_version == 5:
-            self.model.ecoc_encoder.register_forward_hook(self.hook)
+            self.model.ecoc_encoder[0].register_forward_hook(self.hook)
         else:
             self.model.backbone.avgpool.register_forward_hook(self.hook)
 
@@ -46,37 +45,17 @@ class SimCLR(object):
         logging.basicConfig(filename=os.path.join(self.writer.log_dir, 'training.log'), level=logging.DEBUG)
         self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
 
-    def compare_models(self, model_1, model_2):
-        models_differ = 0
-        for key_item_1, key_item_2 in zip(model_1.state_dict().items(), model_2.state_dict().items()):
-            if torch.equal(key_item_1[1], key_item_2[1]):
-                pass
-            else:
-                models_differ += 1
-                if (key_item_1[0] == key_item_2[0]):
-                    print('Mismtach found at', key_item_1[0])
-                else:
-                    raise Exception
-        if models_differ == 0:
-            print('Models match perfectly! :)')
-        else:
-            print('Models different!')
-
-    def load_model_weight(self, path):
-        print('load weight file from {0}'.format(path))
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        checkpoint = torch.load(path, map_location=device)
-        state_dict = checkpoint['state_dict']
-        self.model.load_state_dict(state_dict, strict=False)
-
     def hook(self, module, input, output):
         self.activation = output.detach()
-        self.activation = self.activation.view([512,2048])
+        self.activation = self.activation.view([self.args.batch_size*2,2048])
 
     def column_seperation_loss(self, features):
         os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
         # consor data type from tensor to np array
         np_features = features.detach().cpu().numpy().astype('float32')
+        # anothor way to convert from tensor to numpy
+        # np_features = features.data.cpu().numpy().astype('float32') 
+
         # the feature need to transpose and convert data distribution to continuous
         np_features = np.ascontiguousarray(np_features.T)
         # cosine similarity search using faiss tool
