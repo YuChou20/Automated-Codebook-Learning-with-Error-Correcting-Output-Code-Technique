@@ -13,11 +13,15 @@ import torch.nn as nn
 import argparse
 import logging
 from models.resnet_ecoc_simclr import ResNetECOCSimCLR
+from torch.utils.tensorboard import SummaryWriter
 
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
-parser.add_argument('-folder_name', default='cifar10-1000-lars-v3-1',
+
+parser.add_argument('-folder_name', default='cifar10-lars-v5-baseline-1',
                     help='model file name')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
+                    help='number of total epochs to run')
+parser.add_argument('--pretrain_epochs', default=600, type=int, metavar='N',
                     help='number of total epochs to run')
 
 def get_stl10_data_loaders(download, shuffle=False, batch_size=256):
@@ -68,11 +72,14 @@ if __name__ == '__main__':
   device = 'cuda' if torch.cuda.is_available() else 'cpu'
   print("Using device:", device)
   args = parser.parse_args()
+  writer = SummaryWriter()
   # Load config.yml
   with open(os.path.join('./runs/{0}/config.yml'.format(args.folder_name))) as file:
     config = yaml.load(file, Loader=yaml.Loader)
 
-  cp_epoch = (4-len(str(config.epochs)))*'0' + str(config.epochs)
+  # cp_epoch = (len(str(config.epochs)))*'0' + str(config.epochs)
+  cp_epoch = '{:04d}'.format(args.pretrain_epochs)
+  
 
   # Get baseline model arch
   if config.arch == 'resnet18':
@@ -138,18 +145,17 @@ if __name__ == '__main__':
   criterion = torch.nn.CrossEntropyLoss().to(device)
 
   # training & testing
-  logging.basicConfig(filename=os.path.join('./runs/{0}'.format(args.folder_name), 'eval.log'), level=logging.DEBUG)
+  logging.basicConfig(filename=os.path.join('./runs/{0}'.format(args.folder_name), 'eval_{0}.log'.format(cp_epoch)), level=logging.DEBUG)
   for epoch in range(args.epochs):
     top1_train_accuracy = 0
+    # training
     for counter, (x_batch, y_batch) in enumerate(train_loader):
       x_batch = x_batch.to(device)
       y_batch = y_batch.to(device)
 
       logits = model(x_batch)
+    
       loss = criterion(logits, y_batch)
-
-      # if config.model_version == 5:
-      #   loss.requires_grad = True
 
       top1 = accuracy(logits, y_batch, topk=(1,))
       top1_train_accuracy += top1[0]
@@ -161,6 +167,7 @@ if __name__ == '__main__':
     top1_train_accuracy /= (counter + 1)
     top1_accuracy = 0
     top5_accuracy = 0
+    # testing
     for counter, (x_batch, y_batch) in enumerate(test_loader):
       x_batch = x_batch.to(device)
       y_batch = y_batch.to(device)
@@ -173,5 +180,11 @@ if __name__ == '__main__':
 
     top1_accuracy /= (counter + 1)
     top5_accuracy /= (counter + 1)
+
+    writer.add_scalar('loss', loss, global_step=epoch)
+    writer.add_scalar('Eval Train: acc/top1', top1_accuracy, global_step=epoch)
+    writer.add_scalar('Eval: acc/top1', top1_accuracy, global_step=epoch)
+    writer.add_scalar('Eval: acc/top5', top5_accuracy, global_step=epoch)
+    
     logging.info(f"Epoch {epoch}\tTop1 Train accuracy {top1_train_accuracy.item()}\tTop1 Test accuracy: {top1_accuracy.item()}\tTop5 test acc: {top5_accuracy.item()}")
     print(f"Epoch {epoch}\tTop1 Train accuracy {top1_train_accuracy.item()}\tTop1 Test accuracy: {top1_accuracy.item()}\tTop5 test acc: {top5_accuracy.item()}")
