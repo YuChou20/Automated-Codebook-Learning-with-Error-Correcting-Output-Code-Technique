@@ -17,11 +17,11 @@ from torch.utils.tensorboard import SummaryWriter
 import faiss
 
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
-parser.add_argument('-folder_name', default='cifar10-lars-v5.2-1-batch512',
+parser.add_argument('-folder_name', default='cifar10-lars-v5.2-out10',
                     help='model file name')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
-parser.add_argument('--pretrain_epochs', default=1000, type=int, metavar='N',
+parser.add_argument('--pretrain_epochs', default=100, type=int, metavar='N',
                     help='number of total epochs to run')
 def get_stl10_data_loaders(download, shuffle=False, batch_size=256):
   train_dataset = datasets.STL10('./datasets', split='train', download=download,
@@ -155,13 +155,14 @@ def get_logits(features, codewords, out_dim=10):
     logits = np.take_along_axis(D, ind, axis=-1)
     return torch.tensor(logits, dtype=torch.float32, device=torch.device('cuda:0'),  requires_grad=True)
 
-def get_loss(features, codewords, labels):
+def get_hinge_loss(features, codewords, labels):
     loss = 0
     for i in range(features.shape[0]):
       cos = torch.nn.CosineSimilarity(dim=0)
       y = torch.tensor(codewords[labels[i]], dtype=torch.float32, device=torch.device('cuda:0'),  requires_grad=True)
-      loss += max(1-cos(features[i], y),0)
+      loss += max(0.5-cos(features[i], y),0)
     return torch.tensor(loss, dtype=torch.float32, device=torch.device('cuda:0'),  requires_grad=True)
+
 def get_acc(logits, labels):
   counts = 0
   for i in range(len(logits)):
@@ -182,13 +183,14 @@ if __name__ == '__main__':
 
   # cp_epoch = (4-len(str(config.epochs)))*'0' + str(config.epochs)
   cp_epoch = '{:04d}'.format(args.pretrain_epochs)
-  
+  code_dim = config.code_dim
+
   # Get baseline model arch
   if config.arch == 'resnet18':
     model = torchvision.models.resnet18(pretrained=False, num_classes=10).to(device)
   elif config.arch == 'resnet50':
     if config.model_version == 5:
-      model = ResNetECOCSimCLR(base_model=config.arch, out_dim=10)
+      model = ResNetECOCSimCLR(base_model=config.arch, out_dim=10, code_dim=code_dim)
       
       # Remove last relu
       model.ecoc_encoder[1]= nn.Identity()
@@ -232,7 +234,7 @@ if __name__ == '__main__':
   elif config.dataset_name == 'stl10':
     train_loader, test_loader = get_stl10_data_loaders(download=True)
   print("Dataset:", config.dataset_name)
-  codewords = generate_codeword(model, codeword_gen_loader, class_num=10, out_dim=2048)
+  
 
   requires_grad_list = ['ecoc_encoder.0.weight', 'ecoc_encoder.0.bias'] if config.model_version == 5 else []
 
@@ -252,47 +254,38 @@ if __name__ == '__main__':
   criterion = torch.nn.CrossEntropyLoss().to(device)
 
   # training & testing
-  logging.basicConfig(filename=os.path.join('./runs/{0}'.format(args.folder_name), 'ecocdec_eval_{0}.log'.format(cp_epoch)), level=logging.DEBUG)
-  
+  logging.basicConfig(filename=os.path.join('./runs/{0}'.format(args.folder_name), 'ecocdec_v3_eval_{0}.log'.format(cp_epoch)), level=logging.DEBUG)
+  codewords = generate_codeword(model, codeword_gen_loader, class_num=10, out_dim=code_dim)
   for epoch in range(args.epochs):
+    # codewords = generate_codeword(model, codeword_gen_loader, class_num=10, out_dim=code_dim)
     top1_train_accuracy = 0
     selfacc = 0
+    
     # training
     for counter, (x_batch, y_batch) in enumerate(train_loader):
       
       x_batch = x_batch.to(device)
       y_batch = y_batch.to(device)
-
-      # loss = get_loss(model(x_batch), codewords, labels=y_batch)
-      # print(model.ecoc_encoder[0].weight)
-      # logits = get_logits(model(x_batch), codewords)
-      # logits = get_logits(model(x_batch), codewords)
-      logits = calculate_cosine_similarity(model(x_batch), codewords)
-      loss = criterion(logits, y_batch)#.add(get_loss(model(x_batch), codewords, labels=y_batch))
-      # print(loss)
-      top1 = accuracy(logits, y_batch, topk=(1,))
+      logits = model(x_batch)
+      pred_class = calculate_cosine_similarity(logits, codewords)
+      loss = criterion(pred_class, y_batch).add(get_hinge_loss(model(x_batch), codewords, labels=y_batch))
+      top1 = accuracy(pred_class, y_batch, topk=(1,))
 
       top1_train_accuracy += top1[0]
       optimizer.zero_grad()
       loss.backward()
       optimizer.step()
-      # print(list(model.parameters())[-3].requires_grad)
-      # check if weights are updated
-      # a = list(model.parameters())[0].clone()
-      # loss.backward()
-      # optimizer.step()
-      # b = list(model.parameters())[0].clone()
-      # print(torch.equal(a.data, b.data))
     top1_train_accuracy /= (counter + 1)
     top1_accuracy = 0
     top5_accuracy = 0
     # testing
+    codewords_test = generate_codeword(model, codeword_gen_loader, class_num=10, out_dim=code_dim)
     for counter, (x_batch, y_batch) in enumerate(test_loader):
       x_batch = x_batch.to(device)
       y_batch = y_batch.to(device)
 
       # logits = get_logits(model(x_batch), codewords)
-      logits = calculate_cosine_similarity(model(x_batch), codewords)
+      logits = calculate_cosine_similarity(model(x_batch), codewords_test)
 
       top1, top5 = accuracy(logits, y_batch, topk=(1,5))
       top1_accuracy += top1[0]
