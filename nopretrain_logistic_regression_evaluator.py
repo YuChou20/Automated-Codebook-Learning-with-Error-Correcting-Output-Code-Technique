@@ -14,6 +14,7 @@ import argparse
 import logging
 from models.resnet_ecoc_simclr import ResNetECOCSimCLR
 from torch.utils.tensorboard import SummaryWriter
+import AdversarialAttackCleverHans
 
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 
@@ -22,6 +23,20 @@ parser.add_argument('-folder_name', default='cifar10-lars-v5.2-out100',
 parser.add_argument('--epochs', default=2000, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--pretrain_epochs', default=2000, type=int, metavar='N',
+                    help='number of total epochs to run')
+
+# Attack settings
+parser.add_argument('--attack_type', default='CWL2',
+                    help='FGSM or PGD or CWL2 or None', choices=['FGSM', 'PGD', 'CWL2', 'None'])
+parser.add_argument('--norm', default=np.inf , type=int, metavar='N',
+                    help='norm of the attack (np.inf or 2)')
+parser.add_argument('--max_iter', default=100, type=int, metavar='N',
+                    help='max iteration for PGD attack ')
+parser.add_argument('--epsilon', default=0.031, type=int, metavar='N',
+                    help='bound the attack norm ')
+parser.add_argument('--eps_step', default=0.01, type=int, metavar='N',
+                    help='epsilon step for PGD attack')
+parser.add_argument('--loss', default=torch.nn.CrossEntropyLoss(),
                     help='number of total epochs to run')
 
 def get_stl10_data_loaders(download, shuffle=False, batch_size=256):
@@ -68,6 +83,16 @@ def accuracy(output, target, topk=(1,)):
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
     
+def get_attacked_dataset(attack_type, model, test_data):
+  if attack_type == 'FGSM':
+      data_perturbed = AdversarialAttackCleverHans.FGSM(model, config.batch_size, test_data, args.epsilon, args.norm)             
+  elif attack_type == 'PGD':
+      data_perturbed = AdversarialAttackCleverHans.PGD(model, config.batch_size, test_data, args.epsilon, args.eps_step, args.max_iter, args.norm, args.loss, early_stop=True)
+      print('end*-------------------------')
+  elif attack_type == 'CWL2':
+      data_perturbed = AdversarialAttackCleverHans.CW_L2(model, config.batch_size, test_data, max_iter=args.max_iter)
+  return data_perturbed
+
 if __name__ == '__main__':
   device = 'cuda' if torch.cuda.is_available() else 'cpu'
   print("Using device:", device)
@@ -166,7 +191,9 @@ if __name__ == '__main__':
     top1_accuracy = 0
     top5_accuracy = 0
     # testing
-    for counter, (x_batch, y_batch) in enumerate(test_loader):
+    if args.attack_type != 'None':
+       perturbed_test_loader = get_attacked_dataset(attack_type=args.attack_type, model=model, test_data=test_loader)
+    for counter, (x_batch, y_batch) in enumerate(perturbed_test_loader):
       x_batch = x_batch.to(device)
       y_batch = y_batch.to(device)
 

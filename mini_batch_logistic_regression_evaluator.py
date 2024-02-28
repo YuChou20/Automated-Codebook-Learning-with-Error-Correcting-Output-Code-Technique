@@ -12,17 +12,40 @@ from torchvision import datasets
 import torch.nn as nn
 import argparse
 import logging
+import AdversarialAttackCleverHans
 from models.resnet_ecoc_simclr import ResNetECOCSimCLR
 from torch.utils.tensorboard import SummaryWriter
 
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 
-parser.add_argument('-folder_name', default='cifar10-lars-v5.2-out100-v2',
+# Model settings
+parser.add_argument('-folder_name', default='cifar10-lars-v5-baseline-1',
                     help='model file name')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
-parser.add_argument('--pretrain_epochs', default=100, type=int, metavar='N',
+parser.add_argument('--pretrain_epochs', default=1800, type=int, metavar='N',
                     help='number of total epochs to run')
+# Attack settings
+parser.add_argument('--attack_type', default='PGD',
+                    help='FGSM or PDG or CWL2 or None', choices=['FGSM', 'PGD', 'CWL2', 'None'])
+parser.add_argument('--norm', default=np.inf , type=int, metavar='N',
+                    help='norm of the attack (np.inf or 2)')
+parser.add_argument('--max_iter', default=100, type=int, metavar='N',
+                    help='max iteration for PGD attack ')
+parser.add_argument('--epsilon', default=0.031, type=int, metavar='N',
+                    help='bound the attack norm ')
+parser.add_argument('--eps_step', default=0.01, type=int, metavar='N',
+                    help='epsilon step for PGD attack')
+parser.add_argument('--loss', default=torch.nn.CrossEntropyLoss(),
+                    help='number of total epochs to run')
+
+# norm = np.inf             # norm of the attack (np.inf or 2)
+# max_iter = 100            # max iteration for PGD attack 
+# es = True                 # True: PGD^es, False: PGD
+# epsilon =  0.031          # bound the attack norm 
+# eps_step = 1/3 * epsilon  # epsilon step for PGD attack
+# loss = cw_loss            # torch.nn.CrossEntropyLoss()   # loss function for PGD attack 
+
 
 def get_stl10_data_loaders(download, shuffle=False, batch_size=256):
   train_dataset = datasets.STL10('./datasets', split='train', download=download,
@@ -68,6 +91,16 @@ def accuracy(output, target, topk=(1,)):
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
     
+def get_attacked_dataset(attack_type, model, test_data):
+  data_perturbed = {}
+  if attack_type == 'FGSM':
+      data_perturbed = AdversarialAttackCleverHans.FGSM(model, config.batch_size, test_data, args.epsilon, args.norm)             
+  elif attack_type == 'PGD':
+      data_perturbed = AdversarialAttackCleverHans.PGD(model, config.batch_size, test_data, args.epsilon, args.eps_step, args.max_iter, args.norm, args.loss, early_stop=True)
+  elif attack_type == 'CWL2':
+      data_perturbed = AdversarialAttackCleverHans.CW_L2(model, config.batch_size, test_data, max_iter=args.max_iter)
+  return data_perturbed
+
 if __name__ == '__main__':
   device = 'cuda' if torch.cuda.is_available() else 'cpu'
   print("Using device:", device)
@@ -143,7 +176,7 @@ if __name__ == '__main__':
   criterion = torch.nn.CrossEntropyLoss().to(device)
 
   # training & testing
-  logging.basicConfig(filename=os.path.join('./runs/{0}'.format(args.folder_name), 'eval_{0}.log'.format(cp_epoch)), level=logging.DEBUG)
+  logging.basicConfig(filename=os.path.join('./runs/{0}'.format(args.folder_name), 'eval_{0}_{1}.log'.format(args.attack_type, cp_epoch)), level=logging.DEBUG)
   for epoch in range(args.epochs):
     top1_train_accuracy = 0
     # training
@@ -166,10 +199,12 @@ if __name__ == '__main__':
     top1_accuracy = 0
     top5_accuracy = 0
     # testing
-    for counter, (x_batch, y_batch) in enumerate(test_loader):
+    # Get attacked dataset if attack
+    if args.attack_type != 'None':
+       perturbed_test_loader = get_attacked_dataset(attack_type=args.attack_type, model=model, test_data=test_loader)
+    for counter, (x_batch, y_batch) in enumerate(perturbed_test_loader):
       x_batch = x_batch.to(device)
-      y_batch = y_batch.to(device)
-
+      y_batch = y_batch.type(torch.LongTensor).to(device)
       logits = model(x_batch)
 
       top1, top5 = accuracy(logits, y_batch, topk=(1,5))
