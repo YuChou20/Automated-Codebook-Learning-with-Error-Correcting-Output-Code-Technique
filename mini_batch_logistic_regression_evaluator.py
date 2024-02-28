@@ -17,11 +17,11 @@ from torch.utils.tensorboard import SummaryWriter
 
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 
-parser.add_argument('-folder_name', default='cifar10-lars-v5-baseline-1',
+parser.add_argument('-folder_name', default='cifar10-lars-v5.2-out100-v2',
                     help='model file name')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
-parser.add_argument('--pretrain_epochs', default=600, type=int, metavar='N',
+parser.add_argument('--pretrain_epochs', default=100, type=int, metavar='N',
                     help='number of total epochs to run')
 
 def get_stl10_data_loaders(download, shuffle=False, batch_size=256):
@@ -79,14 +79,14 @@ if __name__ == '__main__':
 
   # cp_epoch = (len(str(config.epochs)))*'0' + str(config.epochs)
   cp_epoch = '{:04d}'.format(args.pretrain_epochs)
+  code_dim = config.code_dim
   
-
   # Get baseline model arch
   if config.arch == 'resnet18':
     model = torchvision.models.resnet18(pretrained=False, num_classes=10).to(device)
   elif config.arch == 'resnet50':
     if config.model_version == 5:
-      model = ResNetECOCSimCLR(base_model=config.arch, out_dim=10)
+      model = ResNetECOCSimCLR(base_model=config.arch, out_dim=10, code_dim=code_dim)
       dim_mlp = model.ecoc_encoder[0].out_features
       model.fc = nn.Linear(dim_mlp, 10)
     else:
@@ -95,8 +95,6 @@ if __name__ == '__main__':
       model.conv1 = nn.Conv2d(3, 64, 3, 1, 1, bias=False)
       model.maxpool = nn.Identity()
     print(model)
-
-
 
   model.cuda()
   # print(model)
