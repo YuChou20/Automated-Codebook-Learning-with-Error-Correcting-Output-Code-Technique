@@ -41,7 +41,6 @@ class SimCLR(object):
         # self.n_neighbors = self.args.n_neighbors+1 if self.args.n_neighbors < 2048 else 2048
         self.n_neighbors = self.code_dim
         self.weight_save_epoch = self.args.save_weight_every_n_steps
-        print(self.weight_save_epoch)
         self.activation = torch.empty([1, 1]) 
         self.writer = SummaryWriter()
         logging.basicConfig(filename=os.path.join(self.writer.log_dir, 'training.log'), level=logging.DEBUG)
@@ -102,7 +101,6 @@ class SimCLR(object):
         if self.model_version==3:
             loss = D[:,1:].sum()/ (np_features.shape[0]*self.n_neighbors)
         elif self.model_version==4 or 5:
-            print(D.shape)
             loss = D[:,1:].sum()*self.csw
         return torch.tensor(loss, dtype=torch.float32, device=torch.device('cuda:0'))
         
@@ -140,7 +138,7 @@ class SimCLR(object):
         return logits, labels
     
     def train(self, train_loader):
-        print(self.model)
+        # print(self.model)
         scaler = GradScaler(enabled=self.args.fp16_precision)
 
         # save config file
@@ -148,7 +146,7 @@ class SimCLR(object):
 
         logging.info(f"Start SimCLR training for {self.args.epochs} epochs.")
         logging.info(f"Training with gpu: {self.args.disable_cuda}.")
-        # print(self.model)
+        
         for epoch_counter in range(1, self.args.epochs+1):
             for images, _ in tqdm(train_loader):
                 images = torch.cat(images, dim=0)
