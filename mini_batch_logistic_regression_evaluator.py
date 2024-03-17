@@ -19,21 +19,21 @@ from torch.utils.tensorboard import SummaryWriter
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 
 # Model settings
-parser.add_argument('-folder_name', default='cifar10-lars-v5-baseline-1',
+parser.add_argument('-folder_name', default='cifar10-baseline-out100',
                     help='model file name')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--pretrain_epochs', default=1800, type=int, metavar='N',
                     help='number of total epochs to run')
 # Attack settings
-parser.add_argument('--attack_type', default='PGD',
-                    help='FGSM or PDG or CWL2 or None', choices=['FGSM', 'PGD', 'CWL2', 'None'])
-parser.add_argument('--norm', default=np.inf , type=int, metavar='N',
+parser.add_argument('--attack_type', default='CWL2',
+                    help='FGSM or PGD or CWL2 or None', choices=['FGSM', 'PGD', 'CWL2', 'None'])
+parser.add_argument('--norm', default=2 , type=int, metavar='N',
                     help='norm of the attack (np.inf or 2)')
-parser.add_argument('--max_iter', default=100, type=int, metavar='N',
+parser.add_argument('--max_iter', default=3, type=int, metavar='N',
                     help='max iteration for PGD attack ')
-parser.add_argument('--epsilon', default=0.031, type=int, metavar='N',
-                    help='bound the attack norm ')
+parser.add_argument('--epsilon', default=0.031, type=int, metavar='N', 
+                    help='bound the attack norm ')#0.031
 parser.add_argument('--eps_step', default=0.01, type=int, metavar='N',
                     help='epsilon step for PGD attack')
 parser.add_argument('--loss', default=torch.nn.CrossEntropyLoss(),
@@ -70,6 +70,20 @@ def get_cifar10_data_loaders(download, shuffle=False, batch_size=256):
 
   test_dataset = datasets.CIFAR10('./datasets', train=False, download=download,
                                   transform=transforms.ToTensor())
+
+  test_loader = DataLoader(test_dataset, batch_size=2*batch_size,
+                            num_workers=10, drop_last=False, shuffle=shuffle)
+  return train_loader, test_loader
+
+def get_mnist_data_loaders(download, shuffle=False, batch_size=256):
+  train_dataset = datasets.MNIST('./datasets', train=True, download=download,
+                                  transform=transforms.Compose([transforms.Grayscale(3), transforms.ToTensor()]))
+
+  train_loader = DataLoader(train_dataset, batch_size=batch_size,
+                            num_workers=0, drop_last=False, shuffle=shuffle)
+
+  test_dataset = datasets.MNIST('./datasets', train=False, download=download,
+                                  transform=transforms.Compose([transforms.Grayscale(3), transforms.ToTensor()]))
 
   test_loader = DataLoader(test_dataset, batch_size=2*batch_size,
                             num_workers=10, drop_last=False, shuffle=shuffle)
@@ -157,6 +171,8 @@ if __name__ == '__main__':
     train_loader, test_loader = get_cifar10_data_loaders(download=True)
   elif config.dataset_name == 'stl10':
     train_loader, test_loader = get_stl10_data_loaders(download=True)
+  elif config.dataset_name == 'mnist':
+    train_loader, test_loader = get_mnist_data_loaders(download=True)
   print("Dataset:", config.dataset_name)
 
   requires_grad_list = ['ecoc_encoder.0.weight', 'ecoc_encoder.0.bias', 'fc.weight', 'fc.bias'] if config.model_version == 5 else ['fc.weight', 'fc.bias']
@@ -176,7 +192,17 @@ if __name__ == '__main__':
   criterion = torch.nn.CrossEntropyLoss().to(device)
 
   # training & testing
-  logging.basicConfig(filename=os.path.join('./runs/{0}'.format(args.folder_name), 'eval_{0}_{1}.log'.format(args.attack_type, cp_epoch)), level=logging.DEBUG)
+  logging.basicConfig(filename=os.path.join('./runs/{0}'.format(args.folder_name), 'test_eval_{0}_{1}.log'.format(args.attack_type, cp_epoch)), level=logging.DEBUG)
+  if args.attack_type != 'None':
+    logging.info('attack_type = {0}'.format(args.attack_type))
+    logging.info('norm = {0}'.format(args.norm))
+    if args.attack_type != 'FGSM':
+      logging.info('max_iter = {0}'.format(args.max_iter))
+    if args.attack_type != 'CWL2':
+      logging.info('epsilon = {0}'.format(args.epsilon))
+    if args.attack_type == 'PGD':
+      logging.info('eps_step = {0}'.format(args.eps_step))
+
   for epoch in range(args.epochs):
     top1_train_accuracy = 0
     # training
@@ -198,14 +224,16 @@ if __name__ == '__main__':
     top1_train_accuracy /= (counter + 1)
     top1_accuracy = 0
     top5_accuracy = 0
+    attacked_top1_accuracy = 0
+    attacked_top5_accuracy = 0
     # testing
-    # Get attacked dataset if attack
-    if args.attack_type != 'None':
-       perturbed_test_loader = get_attacked_dataset(attack_type=args.attack_type, model=model, test_data=test_loader)
-    for counter, (x_batch, y_batch) in enumerate(perturbed_test_loader):
+    for counter, (x_batch, y_batch) in enumerate(test_loader):
       x_batch = x_batch.to(device)
+      y_batch = y_batch.to(device)
       y_batch = y_batch.type(torch.LongTensor).to(device)
-      logits = model(x_batch)
+
+      # logits = get_logits(model(x_batch), codewords)
+      logits = logits = model(x_batch)
 
       top1, top5 = accuracy(logits, y_batch, topk=(1,5))
       top1_accuracy += top1[0]
@@ -215,9 +243,56 @@ if __name__ == '__main__':
     top5_accuracy /= (counter + 1)
 
     writer.add_scalar('loss', loss, global_step=epoch)
-    writer.add_scalar('Eval Train: acc/top1', top1_accuracy, global_step=epoch)
+    writer.add_scalar('Eval Train: acc/top1', top1_train_accuracy, global_step=epoch)
     writer.add_scalar('Eval: acc/top1', top1_accuracy, global_step=epoch)
     writer.add_scalar('Eval: acc/top5', top5_accuracy, global_step=epoch)
-    
     logging.info(f"Epoch {epoch}\tTop1 Train accuracy {top1_train_accuracy.item()}\tTop1 Test accuracy: {top1_accuracy.item()}\tTop5 test acc: {top5_accuracy.item()}")
     print(f"Epoch {epoch}\tTop1 Train accuracy {top1_train_accuracy.item()}\tTop1 Test accuracy: {top1_accuracy.item()}\tTop5 test acc: {top5_accuracy.item()}")
+    # Get attacked dataset if attack
+    if args.attack_type != 'None':
+      perturbed_test_loader = get_attacked_dataset(attack_type=args.attack_type, model=model, test_data=test_loader)
+      for counter, (x_batch, y_batch) in enumerate(perturbed_test_loader):
+        x_batch = x_batch.to(device)
+        y_batch = y_batch.to(device)
+        y_batch = y_batch.type(torch.LongTensor).to(device)
+
+        # logits = get_logits(model(x_batch), codewords)
+        logits = logits = model(x_batch)
+
+        top1, top5 = accuracy(logits, y_batch, topk=(1,5))
+        attacked_top1_accuracy += top1[0]
+        attacked_top5_accuracy += top5[0]
+
+      attacked_top1_accuracy /= (counter + 1)
+      attacked_top5_accuracy /= (counter + 1)
+
+      writer.add_scalar('{0}_attack_loss'.format(args.attack_type), loss, global_step=epoch)
+      writer.add_scalar('{0}_attack_Eval Train: acc/top1'.format(args.attack_type), top1_train_accuracy, global_step=epoch)
+      writer.add_scalar('{0}_attack_Eval: acc/top1'.format(args.attack_type), attacked_top1_accuracy, global_step=epoch)
+      writer.add_scalar('{0}_attack_Eval: acc/top5'.format(args.attack_type), attacked_top5_accuracy, global_step=epoch)
+      logging.info(f"\t\t\t\t\tAttacked Top1 Test accuracy: {attacked_top1_accuracy.item()}\tTop5 test acc: {attacked_top5_accuracy.item()}")
+      print(f"\t\t\t\t\tAttacked Top1 Test accuracy: {attacked_top1_accuracy.item()}\tTop5 test acc: {attacked_top5_accuracy.item()}")
+    # # Get attacked dataset if attack
+    # if args.attack_type != 'None':
+    #    perturbed_test_loader = get_attacked_dataset(attack_type=args.attack_type, model=model, test_data=test_loader)
+    # else:
+    #    perturbed_test_loader = test_loader
+    # for counter, (x_batch, y_batch) in enumerate(perturbed_test_loader):
+    #   x_batch = x_batch.to(device)
+    #   y_batch = y_batch.type(torch.LongTensor).to(device)
+    #   logits = model(x_batch)
+
+    #   top1, top5 = accuracy(logits, y_batch, topk=(1,5))
+    #   top1_accuracy += top1[0]
+    #   top5_accuracy += top5[0]
+
+    # top1_accuracy /= (counter + 1)
+    # top5_accuracy /= (counter + 1)
+
+    # writer.add_scalar('loss', loss, global_step=epoch)
+    # writer.add_scalar('Eval Train: acc/top1', top1_accuracy, global_step=epoch)
+    # writer.add_scalar('Eval: acc/top1', top1_accuracy, global_step=epoch)
+    # writer.add_scalar('Eval: acc/top5', top5_accuracy, global_step=epoch)
+    
+    # logging.info(f"Epoch {epoch}\tTop1 Train accuracy {top1_train_accuracy.item()}\tTop1 Test accuracy: {top1_accuracy.item()}\tTop5 test acc: {top5_accuracy.item()}")
+    # print(f"Epoch {epoch}\tTop1 Train accuracy {top1_train_accuracy.item()}\tTop1 Test accuracy: {top1_accuracy.item()}\tTop5 test acc: {top5_accuracy.item()}")

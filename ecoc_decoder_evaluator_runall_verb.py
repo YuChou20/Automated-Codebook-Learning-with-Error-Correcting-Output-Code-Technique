@@ -19,14 +19,14 @@ import AdversarialAttackCleverHans
 
 # Model settings
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
-parser.add_argument('-folder_name', default='cifar10-lars-v5.2-out100',
+parser.add_argument('-folder_name', default='cifar10-baseline-out100',
                     help='model file name')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--pretrain_epochs', default=2000, type=int, metavar='N',
                     help='number of total epochs to run')
 # Attack settings
-parser.add_argument('--attack_type', default='None',
+parser.add_argument('--attack_type', default='CWL2',
                     help='FGSM' or 'PGD' or 'CWL2 or None', choices=['FGSM', 'PGD', 'CWL2', 'None'])
 parser.add_argument('--norm', default=np.inf , type=int, metavar='N',
                     help='norm of the attack (np.inf or 2)')
@@ -72,6 +72,20 @@ def get_cifar10_data_loaders(download, shuffle=False, batch_size=256):
   test_loader = DataLoader(test_dataset, batch_size=2*batch_size,
                             num_workers=10, drop_last=False, shuffle=shuffle)
   return codeword_gen_loader, train_loader, test_loader
+
+def get_mnist_data_loaders(download, shuffle=False, batch_size=256):
+  train_dataset = datasets.MNIST('./datasets', train=True, download=download,
+                                  transform=transforms.Compose([transforms.Grayscale(3), transforms.ToTensor()]))
+
+  train_loader = DataLoader(train_dataset, batch_size=batch_size,
+                            num_workers=0, drop_last=False, shuffle=shuffle)
+
+  test_dataset = datasets.MNIST('./datasets', train=False, download=download,
+                                  transform=transforms.Compose([transforms.Grayscale(3), transforms.ToTensor()]))
+
+  test_loader = DataLoader(test_dataset, batch_size=2*batch_size,
+                            num_workers=10, drop_last=False, shuffle=shuffle)
+  return train_loader, test_loader
 
 def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
@@ -258,6 +272,8 @@ if __name__ == '__main__':
       codeword_gen_loader, train_loader, test_loader = get_cifar10_data_loaders(download=True)
     elif config.dataset_name == 'stl10':
       train_loader, test_loader = get_stl10_data_loaders(download=True)
+    elif config.dataset_name == 'mnist':
+      codeword_gen_loader, train_loader, test_loader = get_mnist_data_loaders(download=True)
     print("Dataset:", config.dataset_name)
     
 
@@ -325,7 +341,7 @@ if __name__ == '__main__':
       top5_accuracy /= (counter + 1)
 
       writer.add_scalar('loss', loss, global_step=epoch)
-      writer.add_scalar('Eval Train: acc/top1', top1_accuracy, global_step=epoch)
+      writer.add_scalar('Eval Train: acc/top1', top1_train_accuracy, global_step=epoch)
       writer.add_scalar('Eval: acc/top1', top1_accuracy, global_step=epoch)
       writer.add_scalar('Eval: acc/top5', top5_accuracy, global_step=epoch)
       
