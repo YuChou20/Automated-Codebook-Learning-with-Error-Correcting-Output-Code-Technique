@@ -76,16 +76,22 @@ def get_cifar10_data_loaders(download, shuffle=False, batch_size=256):
 def get_mnist_data_loaders(download, shuffle=False, batch_size=256):
   train_dataset = datasets.MNIST('./datasets', train=True, download=download,
                                   transform=transforms.Compose([transforms.Grayscale(3), transforms.ToTensor()]))
+  # split train data into data for generate codeword and for training.
+  codeword_data_size = int(0.2*len(train_dataset))
+  train_size = len(train_dataset) - codeword_data_size
+  lengths = [codeword_data_size, train_size]
+  codeword_gen_dataset, train_dataset = torch.utils.data.dataset.random_split(train_dataset, lengths)
 
+  codeword_gen_loader = DataLoader(codeword_gen_dataset, batch_size=batch_size,
+                            num_workers=0, drop_last=False, shuffle=shuffle)
   train_loader = DataLoader(train_dataset, batch_size=batch_size,
                             num_workers=0, drop_last=False, shuffle=shuffle)
-
   test_dataset = datasets.MNIST('./datasets', train=False, download=download,
                                   transform=transforms.Compose([transforms.Grayscale(3), transforms.ToTensor()]))
 
   test_loader = DataLoader(test_dataset, batch_size=2*batch_size,
                             num_workers=10, drop_last=False, shuffle=shuffle)
-  return train_loader, test_loader
+  return codeword_gen_loader, train_loader, test_loader
 
 def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
