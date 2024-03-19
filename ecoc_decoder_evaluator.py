@@ -341,7 +341,6 @@ if __name__ == '__main__':
 
     for counter, (x_batch, y_batch) in enumerate(test_loader):
       x_batch = x_batch.to(device)
-      y_batch = y_batch.to(device)
       y_batch = y_batch.type(torch.LongTensor).to(device)
 
       # logits = get_logits(model(x_batch), codewords)
@@ -365,7 +364,6 @@ if __name__ == '__main__':
       perturbed_test_loader = get_attacked_dataset(attack_type=args.attack_type, model=model, test_data=test_loader, codewords=codewords_test)
       for counter, (x_batch, y_batch) in enumerate(perturbed_test_loader):
         x_batch = x_batch.to(device)
-        y_batch = y_batch.to(device)
         y_batch = y_batch.type(torch.LongTensor).to(device)
 
         # logits = get_logits(model(x_batch), codewords)

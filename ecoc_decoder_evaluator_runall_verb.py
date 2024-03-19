@@ -333,7 +333,6 @@ if __name__ == '__main__':
         perturbed_test_loader = test_loader
       for counter, (x_batch, y_batch) in enumerate(perturbed_test_loader):
         x_batch = x_batch.to(device)
-        y_batch = y_batch.to(device)
         y_batch = y_batch.type(torch.LongTensor).to(device)
 
         # logits = get_logits(model(x_batch), codewords)
