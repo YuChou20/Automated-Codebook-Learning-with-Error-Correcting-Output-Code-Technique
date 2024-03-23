@@ -90,10 +90,10 @@ class SimCLR(object):
         vector_dim = np_features.shape[1]
         faiss.normalize_L2(np_features)
         
-        nlist = self.code_dim
+        nlist = self.code_dim if self.code_dim <= 100 else 100
         quantizer = faiss.IndexFlatL2(vector_dim) 
         index = faiss.IndexIVFFlat(quantizer, vector_dim, nlist, faiss.METRIC_INNER_PRODUCT) 
-        index.nprobe = self.code_dim
+        index.nprobe = self.code_dim if self.code_dim <= 100 else 100
         index.train(np_features) 
         index.add(np_features)
         D, I = index.search(np_features, self.n_neighbors)

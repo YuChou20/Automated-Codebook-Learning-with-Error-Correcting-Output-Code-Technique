@@ -15,8 +15,8 @@ model_names = sorted(name for name in models.__dict__
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 parser.add_argument('-data', metavar='DIR', default='./datasets',
                     help='path to dataset')
-parser.add_argument('-dataset-name', default='mnist',
-                    help='dataset name', choices=['stl10', 'cifar10', 'mnist'])
+parser.add_argument('-dataset-name', default='gtsrb',
+                    help='dataset name', choices=['stl10', 'cifar10', 'mnist', 'fashion-mnist', 'gtsrb'])
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                     choices=model_names,
                     help='model architecture: ' +
@@ -65,8 +65,8 @@ parser.add_argument('--model_version', default=5, type=int, help='Model version.
                     'Version 4: Column separation loss with csw.'
                     'Version 5: Add ECOC encoder layer.')
 parser.add_argument('--csw', default=0.001, type=float, help='column seperation loss weight.')
-parser.add_argument('--n_neighbors', default=100, type=int, help='n neighbor for consine similarity search.')
-parser.add_argument('--code_dim', default=100, type=int, help='bit size of codeword')
+parser.add_argument('--n_neighbors', default=2048, type=int, help='n neighbor for consine similarity search.')
+parser.add_argument('--code_dim', default=2048, type=int, help='bit size of codeword')
 parser.add_argument('--save_weight_every_n_steps', default=100, type=int,
                     help='Save weight every n steps')
 

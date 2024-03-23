@@ -13,7 +13,7 @@ class ContrastiveLearningDataset:
     def get_simclr_pipeline_transform(dataset_name, size, s=1):
         """Return a set of data augmentation transformations as described in the SimCLR paper."""
         color_jitter = transforms.ColorJitter(0.8 * s, 0.8 * s, 0.8 * s, 0.2 * s)
-        if dataset_name == 'mnist':
+        if dataset_name == 'mnist' or dataset_name == 'fashion-mnist':
             data_transforms = transforms.Compose([transforms.RandomResizedCrop(size=size),
                                                 transforms.RandomHorizontalFlip(),
                                                 transforms.RandomApply([color_jitter], p=0.8),
@@ -37,12 +37,21 @@ class ContrastiveLearningDataset:
                                                                   n_views),
                                                               download=True),
 
-                         'mnist': lambda: datasets.MNIST(self.root_folder, train=True,
+                          'mnist': lambda: datasets.MNIST(self.root_folder, train=True,
                                                               transform=ContrastiveLearningViewGenerator(
                                                                   self.get_simclr_pipeline_transform(name, 28),
                                                                   n_views),
                                                               download=True),
-
+                          'fashion-mnist': lambda: datasets.FashionMNIST(self.root_folder, train=True,
+                                                              transform=ContrastiveLearningViewGenerator(
+                                                                  self.get_simclr_pipeline_transform(name, 28),
+                                                                  n_views),
+                                                              download=True),
+                          'gtsrb': lambda: datasets.GTSRB(self.root_folder, split ='train',
+                                                              transform=ContrastiveLearningViewGenerator(
+                                                                  self.get_simclr_pipeline_transform(name, 16),
+                                                                  n_views),
+                                                              download=True),
                           'stl10': lambda: datasets.STL10(self.root_folder, split='unlabeled',
                                                           transform=ContrastiveLearningViewGenerator(
                                                               self.get_simclr_pipeline_transform(name, 96),
