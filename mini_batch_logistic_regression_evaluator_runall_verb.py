@@ -105,13 +105,13 @@ def get_fashion_mnist_data_loaders(download, shuffle=False, batch_size=256):
 
 def get_gtsrb_data_loaders(download, shuffle=True, batch_size=256):
   train_dataset = datasets.GTSRB('./datasets', split ='train', download=download,
-                                  transform=transforms.ToTensor())
+                                  transform=transforms.Compose([transforms.RandomResizedCrop(size=16), transforms.ToTensor()]))
 
   train_loader = DataLoader(train_dataset, batch_size=batch_size,
                             num_workers=0, drop_last=False, shuffle=shuffle)
 
   test_dataset = datasets.GTSRB('./datasets', split ='test', download=download,
-                                  transform=transforms.ToTensor())
+                                  transform=transforms.Compose([transforms.RandomResizedCrop(size=16), transforms.ToTensor()]))
 
   test_loader = DataLoader(test_dataset, batch_size=2*batch_size,
                             num_workers=10, drop_last=False, shuffle=shuffle)
