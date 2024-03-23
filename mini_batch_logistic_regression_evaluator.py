@@ -89,6 +89,34 @@ def get_mnist_data_loaders(download, shuffle=False, batch_size=256):
                             num_workers=10, drop_last=False, shuffle=shuffle)
   return train_loader, test_loader
 
+def get_fashion_mnist_data_loaders(download, shuffle=False, batch_size=256):
+  train_dataset = datasets.FashionMNIST('./datasets', train=True, download=download,
+                                  transform=transforms.Compose([transforms.Grayscale(3), transforms.ToTensor()]))
+
+  train_loader = DataLoader(train_dataset, batch_size=batch_size,
+                            num_workers=0, drop_last=False, shuffle=shuffle)
+
+  test_dataset = datasets.FashionMNIST('./datasets', train=False, download=download,
+                                  transform=transforms.Compose([transforms.Grayscale(3), transforms.ToTensor()]))
+
+  test_loader = DataLoader(test_dataset, batch_size=2*batch_size,
+                            num_workers=10, drop_last=False, shuffle=shuffle)
+  return train_loader, test_loader
+
+def get_gtsrb_data_loaders(download, shuffle=True, batch_size=256):
+  train_dataset = datasets.GTSRB('./datasets', split ='train', download=download,
+                                  transform=transforms.Compose([transforms.RandomResizedCrop(size=16), transforms.ToTensor()]))
+
+  train_loader = DataLoader(train_dataset, batch_size=batch_size,
+                            num_workers=0, drop_last=False, shuffle=shuffle)
+
+  test_dataset = datasets.GTSRB('./datasets', split ='test', download=download,
+                                  transform=transforms.Compose([transforms.RandomResizedCrop(size=16), transforms.ToTensor()]))
+
+  test_loader = DataLoader(test_dataset, batch_size=2*batch_size,
+                            num_workers=10, drop_last=False, shuffle=shuffle)
+  return train_loader, test_loader
+
 def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
     with torch.no_grad():
@@ -127,15 +155,15 @@ if __name__ == '__main__':
   # cp_epoch = (len(str(config.epochs)))*'0' + str(config.epochs)
   cp_epoch = '{:04d}'.format(args.pretrain_epochs)
   code_dim = config.code_dim
-  
+  class_num = 43 if config.dataset_name == 'gtsrb' else 10
   # Get baseline model arch
   if config.arch == 'resnet18':
     model = torchvision.models.resnet18(pretrained=False, num_classes=10).to(device)
   elif config.arch == 'resnet50':
     if config.model_version == 5:
-      model = ResNetECOCSimCLR(base_model=config.arch, out_dim=10, code_dim=code_dim)
+      model = ResNetECOCSimCLR(base_model=config.arch, out_dim=class_num, code_dim=code_dim)
       dim_mlp = model.ecoc_encoder[0].out_features
-      model.fc = nn.Linear(dim_mlp, 10)
+      model.fc = nn.Linear(dim_mlp, class_num)
     else:
       model = torchvision.models.resnet50(pretrained=False, num_classes=10).to(device)
       dim_mlp = model.fc.in_features
@@ -173,6 +201,10 @@ if __name__ == '__main__':
     train_loader, test_loader = get_stl10_data_loaders(download=True)
   elif config.dataset_name == 'mnist':
     train_loader, test_loader = get_mnist_data_loaders(download=True)
+  elif config.dataset_name == 'fashion-mnist':
+    train_loader, test_loader = get_fashion_mnist_data_loaders(download=True)
+  elif config.dataset_name == 'gtsrb':
+    train_loader, test_loader = get_gtsrb_data_loaders(download=True)
   print("Dataset:", config.dataset_name)
 
   requires_grad_list = ['ecoc_encoder.0.weight', 'ecoc_encoder.0.bias', 'fc.weight', 'fc.bias'] if config.model_version == 5 else ['fc.weight', 'fc.bias']

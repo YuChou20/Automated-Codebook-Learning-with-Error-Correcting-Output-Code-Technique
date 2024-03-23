@@ -93,6 +93,46 @@ def get_mnist_data_loaders(download, shuffle=False, batch_size=256):
                             num_workers=10, drop_last=False, shuffle=shuffle)
   return codeword_gen_loader, train_loader, test_loader
 
+def get_fashion_mnist_data_loaders(download, shuffle=False, batch_size=256):
+  train_dataset = datasets.FashionMNIST('./datasets', train=True, download=download,
+                                  transform=transforms.Compose([transforms.Grayscale(3), transforms.ToTensor()]))
+  # split train data into data for generate codeword and for training.
+  codeword_data_size = int(0.2*len(train_dataset))
+  train_size = len(train_dataset) - codeword_data_size
+  lengths = [codeword_data_size, train_size]
+  codeword_gen_dataset, train_dataset = torch.utils.data.dataset.random_split(train_dataset, lengths)
+
+  codeword_gen_loader = DataLoader(codeword_gen_dataset, batch_size=batch_size,
+                            num_workers=0, drop_last=False, shuffle=shuffle)
+  train_loader = DataLoader(train_dataset, batch_size=batch_size,
+                            num_workers=0, drop_last=False, shuffle=shuffle)
+  test_dataset = datasets.FashionMNIST('./datasets', train=False, download=download,
+                                  transform=transforms.Compose([transforms.Grayscale(3), transforms.ToTensor()]))
+
+  test_loader = DataLoader(test_dataset, batch_size=2*batch_size,
+                            num_workers=10, drop_last=False, shuffle=shuffle)
+  return codeword_gen_loader, train_loader, test_loader
+
+def get_gtsrb_data_loaders(download, shuffle=True, batch_size=256):
+  train_dataset = datasets.GTSRB('./datasets', split ='train', download=download,
+                                  transform=transforms.ToTensor())
+  # split train data into data for generate codeword and for training.
+  codeword_data_size = int(0.2*len(train_dataset))
+  train_size = len(train_dataset) - codeword_data_size
+  lengths = [codeword_data_size, train_size]
+  codeword_gen_dataset, train_dataset = torch.utils.data.dataset.random_split(train_dataset, lengths)
+
+  codeword_gen_loader = DataLoader(codeword_gen_dataset, batch_size=batch_size,
+                            num_workers=0, drop_last=False, shuffle=shuffle)
+  train_loader = DataLoader(train_dataset, batch_size=batch_size,
+                            num_workers=0, drop_last=False, shuffle=shuffle)
+  test_dataset = datasets.GTSRB('./datasets', split ='test', download=download,
+                                  transform=transforms.ToTensor())
+
+  test_loader = DataLoader(test_dataset, batch_size=2*batch_size,
+                            num_workers=10, drop_last=False, shuffle=shuffle)
+  return codeword_gen_loader, train_loader, test_loader
+
 def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
     with torch.no_grad():
@@ -228,13 +268,13 @@ if __name__ == '__main__':
   # cp_epoch = (4-len(str(config.epochs)))*'0' + str(config.epochs)
   cp_epoch = '{:04d}'.format(args.pretrain_epochs)
   code_dim = config.code_dim
-
+  class_num = 43 if config.dataset_name == 'gtsrb' else 10
   # Get baseline model arch
   if config.arch == 'resnet18':
     model = torchvision.models.resnet18(pretrained=False, num_classes=10).to(device)
   elif config.arch == 'resnet50':
     if config.model_version == 5:
-      model = ResNetECOCSimCLR(base_model=config.arch, out_dim=10, code_dim=code_dim)
+      model = ResNetECOCSimCLR(base_model=config.arch, out_dim=class_num, code_dim=code_dim)
       
       # Remove last relu
       model.ecoc_encoder[1]= nn.Identity()
@@ -279,6 +319,10 @@ if __name__ == '__main__':
     train_loader, test_loader = get_stl10_data_loaders(download=True)
   elif config.dataset_name == 'mnist':
     codeword_gen_loader, train_loader, test_loader = get_mnist_data_loaders(download=True)
+  elif config.dataset_name == 'fashion-mnist':
+    codeword_gen_loader, train_loader, test_loader = get_fashion_mnist_data_loaders(download=True)
+  elif config.dataset_name == 'gtsrb':
+    codeword_gen_loader, train_loader, test_loader = get_gtsrb_data_loaders(download=True)
   print("Dataset:", config.dataset_name)
   
 
@@ -310,7 +354,7 @@ if __name__ == '__main__':
       logging.info('epsilon = {0}'.format(args.epsilon))
     if args.attack_type == 'PGD':
       logging.info('eps_step = {0}'.format(args.eps_step))
-  codewords = generate_codeword(model, codeword_gen_loader, class_num=10, out_dim=code_dim)
+  codewords = generate_codeword(model, codeword_gen_loader, class_num=class_num, out_dim=code_dim)
   for epoch in range(args.epochs):
     # if epoch % 20 == 0:
     #   codewords = generate_codeword(model, codeword_gen_loader, class_num=10, out_dim=code_dim)
@@ -337,7 +381,7 @@ if __name__ == '__main__':
     attacked_top1_accuracy = 0
     attacked_top5_accuracy = 0
     # testing
-    codewords_test = generate_codeword(model, codeword_gen_loader, class_num=10, out_dim=code_dim)
+    codewords_test = generate_codeword(model, codeword_gen_loader, class_num=class_num, out_dim=code_dim)
 
     for counter, (x_batch, y_batch) in enumerate(test_loader):
       x_batch = x_batch.to(device)
