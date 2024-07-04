@@ -1,4 +1,4 @@
-# PyTorch SimCLR: A Simple Framework for Contrastive Learning of Visual Representations
+# Automated Codebook Learning with Error Correcting Output Code Technique
 [![DOI](https://zenodo.org/badge/241184407.svg)](https://zenodo.org/badge/latestdoi/241184407)
 
 
