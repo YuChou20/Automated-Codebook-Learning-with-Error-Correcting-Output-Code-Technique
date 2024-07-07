@@ -15,7 +15,7 @@ model_names = sorted(name for name in models.__dict__
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 parser.add_argument('-data', metavar='DIR', default='./datasets',
                     help='path to dataset')
-parser.add_argument('-dataset-name', default='gtsrb',
+parser.add_argument('-dataset-name', default='cifar10',
                     help='dataset name', choices=['stl10', 'cifar10', 'mnist', 'fashion-mnist', 'gtsrb'])
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                     choices=model_names,
@@ -46,7 +46,7 @@ parser.add_argument('--gpu-index', default=0, type=int, help='Gpu index.')
 
 parser.add_argument('--load_weight', default=False, type=bool,
                     help='Load weight if True')
-parser.add_argument('--weight_path', metavar='DIR', default='./runs/test/checkpoint_2000.pth.tar',
+parser.add_argument('--weight_path', metavar='DIR', default='./runs/checkpoint_2000.pth.tar',
                     help='path to dataset')
 parser.add_argument('-b', '--batch_size', default=256, type=int,
                     metavar='N',
@@ -59,15 +59,10 @@ parser.add_argument('--temperature', default=0.5, type=float,
                     help='softmax temperature (default: 0.07)')
 parser.add_argument('--epochs', default=2000, type=int, metavar='N',
                     help='number of total epochs to run')
-parser.add_argument('--model_version', default=5, type=int, help='Model version.'
-                    'Version 2: Replace conv 7x7 with conv 3x3, and remove first max pooling.'
-                    'Version 3: Add average column spearation loss.'
-                    'Version 4: Column separation loss with csw.'
-                    'Version 5: Add ECOC encoder layer.')
-parser.add_argument('--csw', default=0.001, type=float, help='column seperation loss weight.')
-parser.add_argument('--n_neighbors', default=2048, type=int, help='n neighbor for consine similarity search.')
-parser.add_argument('--code_dim', default=2048, type=int, help='bit size of codeword')
-parser.add_argument('--save_weight_every_n_steps', default=100, type=int,
+parser.add_argument('--model_type', default='acl', help='Model.', choices=['simclr', 'acl'])
+parser.add_argument('--csl_lambda', default=0.001, type=float, help='column seperation loss weight.')
+parser.add_argument('--code_dim', default=100, type=int, help='bit size of codeword')
+parser.add_argument('--save_weight_every_n_steps', default=1, type=int,
                     help='Save weight every n steps')
 
 
@@ -93,10 +88,7 @@ def main():
         train_dataset, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=True, drop_last=True)
     
-    if args.model_version == 5:
-        model = ResNetECOCSimCLR(base_model=args.arch, out_dim=args.out_dim, code_dim=args.code_dim)
-    else:
-        model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
+    model = ResNetECOCSimCLR(base_model=args.arch, out_dim=args.out_dim, code_dim=args.code_dim)
 
     #optimizer = torch.optim.Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
     optimizer = LARS(

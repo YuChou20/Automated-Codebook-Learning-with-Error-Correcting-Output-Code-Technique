@@ -19,8 +19,6 @@ class ResNetECOCSimCLR(nn.Module):
         # # add ecoc encoder and mlp projection head
         self.backbone.fc = nn.Identity()
         self.ecoc_encoder = nn.Sequential(nn.Linear(dim_mlp, code_dim), nn.ReLU(inplace=True))
-        # self.ecoc_encoder = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.LeakyReLU(0.1))
-        # self.ecoc_encoder = nn.Sequential(nn.Linear(dim_mlp, dim_mlp))
         self.fc = nn.Sequential(nn.Linear(code_dim, dim_mlp), nn.ReLU(inplace=True), nn.Linear(dim_mlp, 128))
         
     def _get_basemodel(self, model_name):
