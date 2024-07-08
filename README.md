@@ -6,9 +6,7 @@ The research also provides two baseline model, Simple and SimCLR for comparison.
 ## Installation
 
 ```
-$ conda env create --name simclr --file env.yml
-$ conda activate simclr
-$ python run.py
+
 ```
 
 ## Main File Description
