@@ -29,9 +29,9 @@ model_names = sorted(name for name in models.__dict__
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 parser.add_argument('-folder_name', default='cifar10-simclr-code100',
                     help='model file name')
-parser.add_argument('--epochs', default=1, type=int, metavar='N',
+parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
-parser.add_argument('--pretrain_epochs', default=1, type=int, metavar='N',
+parser.add_argument('--pretrain_epochs', default=1800, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                     choices=model_names,
