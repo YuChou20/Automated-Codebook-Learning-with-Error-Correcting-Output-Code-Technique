@@ -36,9 +36,7 @@ Quick Start provides example commands for training different models and lists so
 #### Example
 
 ```python
- 
 $ python run.py -dataset-name cifar10 --epochs 2000 --model_type acl --csl_lambda 0.001 --code_dim 100 --save_weight_every_n_steps 100
-
 ```
 
 #### Options
@@ -54,6 +52,33 @@ $ python run.py -dataset-name cifar10 --epochs 2000 --model_type acl --csl_lambd
 | `--csl_lambda` | `0.001`   | The parameter used for controling the weight of column separation loss. Only used when `--model_type` set as `acl`. |
 | `--code_dim` | `100`   | The length of each codeword. |
 | `--save_weight_every_n_steps` | `100`   | "Save weights every n epochs. |
+
+### ACL Model finetuning (Training)
+#### Example
+
+```python
+$ python acl_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 
+```
+
+### ACL-CFPC Model finetuning (Training)
+#### Example
+
+```python
+$ python acl_cfpc_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 
+```
+
+### ACL-TFC Model Training
+#### Example
+
+```python
+$ python acl_tfc_training.py -folder_name cifar10-simclr-code100 --epochs 200
+```
+
+
+
+
+
+
 
 ## Config file
 
