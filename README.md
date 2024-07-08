@@ -11,6 +11,21 @@ $ conda activate simclr
 $ python run.py
 ```
 
+## Main File Description
+* run.py: This program is used for the pre-training phase of SimCLR, ACL and ACL-CFPC models.
+* simclr.py: The definitions related to the pre-trained model.
+* simple_training.py: The file used for training the Simple model. This model does not have a pre-training phase and can directly proceed to model training.
+* simple_testing.py: This file is used to evaluate the performance of the Simple model. Model training must be completed using `simple_training.py` to obtain the trained model weight before evaluating its performance.
+* simclr_finetune_training.py: The file used for training the SimCLR model in the finetuning phase. Before starting to finetune the model, you must complete the pre-training phase using `run.py`.
+* simclr_finetune_testing.py: This file is used to evaluate the performance of the SimCLR model. Model training must be completed using `simclr_finetune_testing.py` to obtain the trained model weight before evaluating its performance.
+* acl_finetune_training.py: The file used for training the ACL model in the finetuning phase. Before starting to finetune the model, you must complete the pre-training phase using `run.py`.
+* acl_finetune_testing.py: This file is used to evaluate the performance of the ACL model. Model training must be completed using `acl_finetune_training.py` to obtain the trained model weight before evaluating its performance.
+* acl_cfpc_finetune_training.py: The file used for training the ACL-CFPC model in the finetuning phase. Before starting to finetune the model, you must complete the pre-training phase using `run.py`.
+* acl_cfpc_finetune_testing.py: This file is used to evaluate the performance of the ACL-CFPC model. Model training must be completed using `acl_cfpc_finetune_training.py` to obtain the trained model weight before evaluating its performance.
+* acl_tfc_training.py: The file used for training the ACL-TFC model. This model does not have a pre-training phase, but it requires the ACL-CFPC model to be trained first to obtain the learned codebook before training the ACL-TFC model.
+* acl_tfc_testing.py: This file is used to evaluate the performance of the ACL-TFC model. Model training must be completed using `acl_tfc_training.py` to obtain the trained model weight before evaluating its performance.
+
+
 ## Config file
 
 Before running SimCLR, make sure you choose the correct running configurations. You can change the running configurations by passing keyword arguments to the ```run.py``` file.
