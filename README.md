@@ -78,7 +78,8 @@ $ python acl_cfpc_finetune_training.py -folder_name cifar10-simclr-code100 --epo
 |-----------|---------|-------------|
 | `-folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
 | `--epochs` | `200`   | The number of total epochs to run for model training in finetuning phase. |
-| `learned_codebook_name` | `(CE+HL+RSL)cifar10_100bits_codebooks`   | Learned codebook name generated from ACL-CFPC model. |
+| `learned_codebook_name` | `(CE+HL+RSL)cifar10_100bits_codebooks`   | Learned codebook name generated from ACL-CFPC model. <br> > [!WARNING]  
+> The length of the codewords in learned codebook must match to the arch of the ACL-TFC model. |
 
 ### ACL-TFC Model Training
 #### Example
