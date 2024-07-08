@@ -51,7 +51,7 @@ $ python run.py -dataset-name cifar10 --epochs 2000 --model_type acl --csl_lambd
 | `--model_type` | `acl`   | Choose the model for model pre-training. <br/> Options: `simclr`, `acl`. |
 | `--csl_lambda` | `0.001`   | The parameter used for controling the weight of column separation loss. Only used when `--model_type` set as `acl`. |
 | `--code_dim` | `100`   | The length of each codeword. |
-| `--save_weight_every_n_steps` | `100`   | "Save weights every n epochs. |
+| `--save_weight_every_n_steps` | `100`   |Save weights every n epochs. |
 
 ### ACL Model finetuning (Training)
 #### Example
@@ -78,8 +78,7 @@ $ python acl_cfpc_finetune_training.py -folder_name cifar10-simclr-code100 --epo
 |-----------|---------|-------------|
 | `-folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
 | `--epochs` | `200`   | The number of total epochs to run for model training in finetuning phase. |
-| `learned_codebook_name` | `(CE+HL+RSL)cifar10_100bits_codebooks`   | Learned codebook name generated from ACL-CFPC model. <br> > [!WARNING]  
-> The length of the codewords in learned codebook must match to the arch of the ACL-TFC model. |
+| `learned_codebook_name` | `(CE+HL+RSL)cifar10_100bits_codebooks`   | Learned codebook name generated from ACL-CFPC model. |
 
 ### ACL-TFC Model Training
 #### Example
@@ -94,6 +93,10 @@ $ python acl_tfc_training.py -folder_name cifar10-simclr-code100 --epochs 2000 -
 | `-folder_name` | `cifar10-simclr-code100`   | The storage location for the model weights thereafter.  |
 | `--epochs` | `2000`   | The number of total epochs to run for model training. |
 | `-learned_codebook` | `(CE+HL+RSL)cifar10_100bits_codebooks.npy`   | Learned codebook generated from ACL-CFPC model. |
+> [!WARNING]  
+> The length of the codewords in learned codebook must match to the arch of the ACL-TFC model.
+
+
 
 ## Config file
 
