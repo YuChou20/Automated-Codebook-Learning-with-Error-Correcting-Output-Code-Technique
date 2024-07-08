@@ -27,7 +27,7 @@ model_names = sorted(name for name in models.__dict__
                      and callable(models.__dict__[name]))
 # Model settings
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
-parser.add_argument('-folder_name', default='cifar10-simclr-code100',
+parser.add_argument('--folder_name', default='cifar10-simclr-code100',
                     help='model file name')
 parser.add_argument('--dataset_name', default='cifar10',
                     help='dataset name', choices=['stl10', 'cifar10', 'mnist', 'fashion-mnist', 'gtsrb'])
@@ -40,9 +40,9 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                          ' (default: resnet50)')
 parser.add_argument('--load_weight', default=False, type=bool,
                     help='Load weight if True')
-parser.add_argument('-loss_type', default='CE+HL+InfoNCE+MCSM',
+parser.add_argument('--loss_type', default='CE+HL+InfoNCE+MCSM',
                     help='the acl-cfpc model loss type(use for codebook)')
-parser.add_argument('-learned_codebook', default='(CE+HL+RSL)cifar10_100bits_codebooks.npy',
+parser.add_argument('--learned_codebook', default='(CE+HL+RSL)cifar10_100bits_codebooks.npy',
                     help='Learned codebook generated from ACL-CFPC model.')
 parser.add_argument('--code_dim', default=100, type=int, help='bit size of codeword')
 parser.add_argument('--temperature', default=0.5, type=float,

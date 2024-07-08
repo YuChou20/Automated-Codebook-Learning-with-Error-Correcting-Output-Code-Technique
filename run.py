@@ -13,9 +13,9 @@ model_names = sorted(name for name in models.__dict__
                      and callable(models.__dict__[name]))
 
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
-parser.add_argument('-data', metavar='DIR', default='./datasets',
+parser.add_argument('--data', metavar='DIR', default='./datasets',
                     help='path to dataset')
-parser.add_argument('-dataset-name', default='cifar10',
+parser.add_argument('--dataset-name', default='cifar10',
                     help='dataset name', choices=['stl10', 'cifar10', 'mnist', 'fashion-mnist', 'gtsrb'])
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                     choices=model_names,
@@ -62,7 +62,7 @@ parser.add_argument('--epochs', default=2000, type=int, metavar='N',
 parser.add_argument('--model_type', default='acl', help='Model.', choices=['simclr', 'acl'])
 parser.add_argument('--csl_lambda', default=0.001, type=float, help='column seperation loss weight.')
 parser.add_argument('--code_dim', default=100, type=int, help='bit size of codeword')
-parser.add_argument('--save_weight_every_n_steps', default=1, type=int,
+parser.add_argument('--save_weight_every_n_steps', default=100, type=int,
                     help='Save weight every n steps')
 
 

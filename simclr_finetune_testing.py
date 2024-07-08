@@ -26,7 +26,7 @@ model_names = sorted(name for name in models.__dict__
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 
 # Model settings
-parser.add_argument('-folder_name', default='cifar10-simclr-code100',
+parser.add_argument('--folder_name', default='cifar10-simclr-code100',
                     help='model file name')
 parser.add_argument('--pretrain_epochs', default=1, type=int, metavar='N',
                     help='number of total epochs to run')
@@ -35,7 +35,7 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                     help='model architecture: ' +
                          ' | '.join(model_names) +
                          ' (default: resnet50)')
-parser.add_argument('-weight_name', default='(simclr_finetune(CE+HL+RSL)cifar10-simclr-code100_best_checkpoint_1.pth.tar',
+parser.add_argument('--weight_name', default='(simclr_finetune(CE+HL+RSL)cifar10-simclr-code100_best_checkpoint_1.pth.tar',
                     help='model weight name')
 
 # Attack settings

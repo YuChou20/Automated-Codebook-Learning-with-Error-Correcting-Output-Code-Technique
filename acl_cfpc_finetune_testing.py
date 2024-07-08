@@ -27,16 +27,16 @@ model_names = sorted(name for name in models.__dict__
                      and callable(models.__dict__[name]))
 # Model settings
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
-parser.add_argument('-folder_name', default='cifar10-simclr-code100',
+parser.add_argument('--folder_name', default='cifar10-simclr-code100',
                     help='model file name')
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                     choices=model_names, 
                     help='model architecture: ' +
                          ' | '.join(model_names) +
                          ' (default: resnet50)')
-parser.add_argument('-loss_type', default='CE+HL+RSL',
+parser.add_argument('--loss_type', default='CE+HL+RSL',
                     help='model loss type')
-parser.add_argument('-weight_name', default='(CE+HL+RSL)acl_cfpc_best_checkpoint_1.pth.tar',
+parser.add_argument('--weight_name', default='(CE+HL+RSL)acl_cfpc_best_checkpoint_1.pth.tar',
                     help='model weight name')
 
 # Attack PGD

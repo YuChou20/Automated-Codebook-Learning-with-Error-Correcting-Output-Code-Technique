@@ -26,7 +26,7 @@ model_names = sorted(name for name in models.__dict__
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 
 # Model settings
-parser.add_argument('-folder_name', default='cifar10-simclr-code100',
+parser.add_argument('--folder_name', default='cifar10-simclr-code100',
                     help='model file name')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
@@ -37,7 +37,7 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                     help='model architecture: ' +
                          ' | '.join(model_names) +
                          ' (default: resnet50)')
-parser.add_argument('-loss_type', default='CE+HL+RSL',
+parser.add_argument('--loss_type', default='CE+HL+RSL',
                     help='model loss type')
 # Attack settings
 parser.add_argument('--loss', default=torch.nn.CrossEntropyLoss(),
