@@ -29,6 +29,32 @@ $ python run.py
 ## Datasets
 This study utilizes four datasets: [CIFAR-10](https://www.tensorflow.org/datasets/catalog/cifar10), [MNIST](https://www.tensorflow.org/datasets/catalog/mnist), [Fashion-MNIST](https://www.tensorflow.org/datasets/catalog/fashion_mnist), and [GTSRB](https://www.tensorflow.org/datasets/catalog/visual_domain_decathlon). There is no need to manually download these datasets before running the program; all datasets will be automatically downloaded during program execution. The default path for the datasets is "./datasets". Please create the corresponding folder before running any programs.
 
+## Quick Start
+Quick Start provides example commands for training different models and lists some of the more important options. For additional settings, you can adjust the experimental configurations according to the available options in the options section of the code.
+
+### ACL model pre-training
+#### Example
+
+```python
+ 
+$ python run.py --dataset-name cifar10 --epochs 2000 --model_type acl --csl_lambda 0.001 --code_dim 100 --save_weight_every_n_steps 100
+
+```
+
+#### Options
+| Name      | Default | Description |
+|-----------|---------|-------------|
+| `--data` | `./datasets`   | The location where the datasets used in the code are stored.  |
+| `--dataset-name` | `cifar10`   | Dataset name.  |
+| `--lr` | `1.0`   | learning rate used in the model. |
+| `--log-every-n-steps` | `1`   | Log the infomation every n steps. |
+| `--temperature` | `0.5`   | The temperature used for InfoNCE. |
+| `--epochs` | `2000`   | The number of total epochs to run for model training. |
+| `--model_type` | `acl`   | Choose the model for model pre-training. <br/> Options: `simclr`, `acl`. |
+| `--csl_lambda` | `0.001`   | The parameter used for controling the weight of column separation loss. Only used when `--model_type` set as `acl`. |
+| `--code_dim` | `100`   | The length of each codeword. |
+| `--save_weight_every_n_steps` | `100`   | "Save weights every n epochs. |
+
 ## Config file
 
 Before running SimCLR, make sure you choose the correct running configurations. You can change the running configurations by passing keyword arguments to the ```run.py``` file.
