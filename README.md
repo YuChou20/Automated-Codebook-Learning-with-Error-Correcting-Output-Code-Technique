@@ -45,7 +45,7 @@ $ python run.py -dataset-name cifar10 --epochs 2000 --model_type acl --csl_lambd
 | Name      | Default | Description |
 |-----------|---------|-------------|
 | `-data` | `./datasets`   | The location where the datasets used in the code are stored.  |
-| `-dataset-name` | `cifar10`   | Dataset name.  |
+| `-dataset-name` | `cifar10`   | Dataset name.  <br/> Options: `cifar10`, `mnist`, `fashion-mnist`, `gtsrb`|
 | `--lr` | `1.0`   | learning rate used in the model. |
 | `--log-every-n-steps` | `1`   | Log the infomation every n steps. |
 | `--temperature` | `0.5`   | The temperature used for InfoNCE. |
