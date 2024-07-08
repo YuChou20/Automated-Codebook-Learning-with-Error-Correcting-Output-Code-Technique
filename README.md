@@ -60,25 +60,39 @@ $ python run.py -dataset-name cifar10 --epochs 2000 --model_type acl --csl_lambd
 $ python acl_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 
 ```
 
+#### Options
+| Name      | Default | Description |
+|-----------|---------|-------------|
+| `-folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
+| `--epochs` | `200`   | The number of total epochs to run for model training in finetuning phase. |
+
 ### ACL-CFPC Model finetuning (Training)
 #### Example
 
 ```python
-$ python acl_cfpc_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 
+$ python acl_cfpc_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 -loss_type CE+HL+InfoNCE+MCSM
 ```
+
+#### Options
+| Name      | Default | Description |
+|-----------|---------|-------------|
+| `-folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
+| `--epochs` | `200`   | The number of total epochs to run for model training in finetuning phase. |
+| `learned_codebook_name` | `(CE+HL+RSL)cifar10_100bits_codebooks`   | Learned codebook name generated from ACL-CFPC model. |
 
 ### ACL-TFC Model Training
 #### Example
 
 ```python
-$ python acl_tfc_training.py -folder_name cifar10-simclr-code100 --epochs 200
+$ python acl_tfc_training.py -folder_name cifar10-simclr-code100 --epochs 2000 -learned_codebook (CE+HL+RSL)cifar10_100bits_codebooks.npy
 ```
 
-
-
-
-
-
+#### Options
+| Name      | Default | Description |
+|-----------|---------|-------------|
+| `-folder_name` | `cifar10-simclr-code100`   | The storage location for the model weights thereafter.  |
+| `--epochs` | `2000`   | The number of total epochs to run for model training. |
+| `-learned_codebook` | `(CE+HL+RSL)cifar10_100bits_codebooks.npy`   | Learned codebook generated from ACL-CFPC model. |
 
 ## Config file
 
