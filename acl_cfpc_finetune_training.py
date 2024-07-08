@@ -40,6 +40,8 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                          ' (default: resnet50)')
 parser.add_argument('-loss_type', default='CE+HL+RSL',
                     help='model loss type')
+parser.add_argument('-learned_codebook_name', default='(CE+HL+RSL)cifar10_100bits_codebooks',
+                    help='Learned codebook name generated from ACL-CFPC model.')
 
 def get_stl10_data_loaders(download, shuffle=False, batch_size=256):
   train_dataset = datasets.STL10('./datasets', split='train', download=download,
@@ -241,7 +243,7 @@ def row_seperation_loss(features, labels):
     return loss
 
 def save_codebooks(codebooks):
-    np.save('./Codebooks/({0}){1}_{2}bits_codebooks'.format(args.loss_type, config.dataset_name, config.code_dim), codebooks.detach().cpu().numpy())
+    np.save('./Codebooks/{0}.npy'.format(args.learned_codebook_name), codebooks.detach().cpu().numpy())
 
 if __name__ == '__main__':
   device = 'cuda' if torch.cuda.is_available() else 'cpu'

@@ -29,6 +29,8 @@ model_names = sorted(name for name in models.__dict__
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 parser.add_argument('-folder_name', default='cifar10-simclr-code100',
                     help='model file name')
+parser.add_argument('--dataset_name', default='cifar10',
+                    help='dataset name', choices=['stl10', 'cifar10', 'mnist', 'fashion-mnist', 'gtsrb'])
 parser.add_argument('--epochs', default=2000, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
@@ -40,6 +42,11 @@ parser.add_argument('--load_weight', default=False, type=bool,
                     help='Load weight if True')
 parser.add_argument('-loss_type', default='CE+HL+InfoNCE+MCSM',
                     help='the acl-cfpc model loss type(use for codebook)')
+parser.add_argument('-learned_codebook', default='(CE+HL+RSL)cifar10_100bits_codebooks.npy',
+                    help='Learned codebook generated from ACL-CFPC model.')
+parser.add_argument('--code_dim', default=100, type=int, help='bit size of codeword')
+parser.add_argument('--temperature', default=0.5, type=float,
+                    help='softmax temperature (default: 0.07)')
 
 
 def get_stl10_data_loaders(download, shuffle=False, batch_size=256):
@@ -227,8 +234,8 @@ def row_seperation_loss(features, labels):
     for i in range(1, similarity_matrix.shape[0]):
       positives = torch.cat((positives, similarity_matrix[i,labels[i,:].bool()]), dim=0)
       negatives = torch.cat([negatives, similarity_matrix[i,~labels[i,:].bool()]], dim=0)
-    exp_positives = torch.exp(positives / config.temperature)
-    exp_negatives = torch.exp(negatives / config.temperature)
+    exp_positives = torch.exp(positives / args.temperature)
+    exp_negatives = torch.exp(negatives / args.temperature)
     loss = -torch.log((torch.sum(exp_positives)/(torch.sum(exp_positives)+torch.sum(exp_negatives))))
     return loss
 
@@ -241,27 +248,24 @@ def MCSM_loss(features):
     return torch.max(similarity_matrix)
 
 def save_codebooks(codebooks):
-    np.save('./Codebooks/({0}){1}_{2}bits_codebooks'.format(args.loss_type, config.dataset_name, config.code_dim), codebooks)
+    np.save('./Codebooks/({0}){1}_{2}bits_codebooks'.format(args.loss_type, args.dataset_name, args.code_dim), codebooks)
 
 def load_codebooks():
-    return np.load('./Codebooks/({0}){1}_{2}bits_codebooks.npy'.format(args.loss_type, config.dataset_name, config.code_dim))
+    return np.load('./Codebooks/{0}'.format(args.learned_codebook))
 
 if __name__ == '__main__':
   device = 'cuda' if torch.cuda.is_available() else 'cpu'
   print("Using device:", device)
   args = parser.parse_args()
   writer = SummaryWriter()
-  # Load config.yml
-  with open(os.path.join('./runs/{0}/config.yml'.format(args.folder_name))) as file:
-    config = yaml.load(file, Loader=yaml.Loader)
 
-  code_dim = config.code_dim
-  class_num = 43 if config.dataset_name == 'gtsrb' else 10
+  code_dim = args.code_dim
+  class_num = 43 if args.dataset_name == 'gtsrb' else 10
   # Get baseline model arch
-  if config.arch == 'resnet18':
+  if args.arch == 'resnet18':
     model = torchvision.models.resnet18(pretrained=False, num_classes=10).to(device)
-  elif config.arch == 'resnet50':
-    model = ResNetECOCSimCLR(base_model=config.arch, out_dim=class_num, code_dim=code_dim)
+  elif args.arch == 'resnet50':
+    model = ResNetECOCSimCLR(base_model=args.arch, out_dim=class_num, code_dim=code_dim)
     
     # Remove last relu
     model.ecoc_encoder[1]= nn.Identity()
@@ -271,17 +275,17 @@ if __name__ == '__main__':
   model.cuda()
 
   # Load dataset to loader
-  if config.dataset_name == 'cifar10':
+  if args.dataset_name == 'cifar10':
     codeword_gen_loader, train_loader, val_loader, test_loader = get_cifar10_data_loaders(download=True)
-  elif config.dataset_name == 'stl10':
+  elif args.dataset_name == 'stl10':
     train_loader, test_loader = get_stl10_data_loaders(download=True)
-  elif config.dataset_name == 'mnist':
+  elif args.dataset_name == 'mnist':
     codeword_gen_loader, train_loader, val_loader, test_loader = get_mnist_data_loaders(download=True)
-  elif config.dataset_name == 'fashion-mnist':
+  elif args.dataset_name == 'fashion-mnist':
     codeword_gen_loader, train_loader, val_loader, test_loader = get_fashion_mnist_data_loaders(download=True)
-  elif config.dataset_name == 'gtsrb':
+  elif args.dataset_name == 'gtsrb':
     codeword_gen_loader, train_loader, val_loader, test_loader = get_gtsrb_data_loaders(download=True)
-  print("Dataset:", config.dataset_name)
+  print("Dataset:", args.dataset_name)
   
   requires_grad_list = ['ecoc_encoder.0.weight', 'ecoc_encoder.0.bias']
 

@@ -395,4 +395,4 @@ if __name__ == '__main__':
       'optimizer': best_optimizer,
   }, is_best=False, filename='./runs/{0}/{1}'.format(args.folder_name, checkpoint_name))
   logging.info("best_epoch = {0}, best_val_acc = {1}, test_acc = {2}".format(best_epoch, best_val_acc, test_acc))
-  print("({0})acl best_epoch = {1}, best_val_acc = {2}, test_acc = {3}".format(args.loss_type, args.folder_name, best_epoch, best_val_acc, test_acc))
+  print("({0})acl best_epoch = {1}, best_val_acc = {2}, test_acc = {3}".format(args.loss_type, best_epoch, best_val_acc, test_acc))
