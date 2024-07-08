@@ -131,7 +131,7 @@ $ python acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name
 | `--code_dim` | `100`   | The length of each codeword. |
 | `--temperature` | `0.5`   | The temperature used for InfoNCE. |
 > [!WARNING]  
-> The length of the codewords in learned codebook must match to the arch of the ACL-TFC model.
+> The length of the codewords in learned codebook must match to the architecture of the ACL-TFC model.
 
 ### ACL-TFC Model Testing
 #### Example
