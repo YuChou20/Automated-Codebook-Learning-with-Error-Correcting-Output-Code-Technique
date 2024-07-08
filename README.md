@@ -88,7 +88,7 @@ $ python acl_finetune_testing.py -folder_name cifar10-simclr-code100 --attack_ty
 #### Example
 
 ```python
-$ python acl_cfpc_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 -loss_type CE+HL+InfoNCE+MCSM
+$ python acl_cfpc_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 -learned_codebook_name (CE+HL+RSL)cifar10_100bits_codebooks
 ```
 
 #### Options
@@ -96,7 +96,7 @@ $ python acl_cfpc_finetune_training.py -folder_name cifar10-simclr-code100 --epo
 |-----------|---------|-------------|
 | `-folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
 | `--epochs` | `200`   | The number of total epochs to run for model training in finetuning phase. |
-| `learned_codebook_name` | `(CE+HL+RSL)cifar10_100bits_codebooks`   | Learned codebook name generated from ACL-CFPC model. |
+| `-learned_codebook_name` | `(CE+HL+RSL)cifar10_100bits_codebooks`   | Learned codebook name generated from ACL-CFPC model. |
 
 ### ACL-TFC Model Training
 #### Example
