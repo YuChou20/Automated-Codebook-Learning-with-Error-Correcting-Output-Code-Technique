@@ -37,15 +37,15 @@ Quick Start provides example commands for training different models and lists so
 
 ```python
  
-$ python run.py --dataset-name cifar10 --epochs 2000 --model_type acl --csl_lambda 0.001 --code_dim 100 --save_weight_every_n_steps 100
+$ python run.py -dataset-name cifar10 --epochs 2000 --model_type acl --csl_lambda 0.001 --code_dim 100 --save_weight_every_n_steps 100
 
 ```
 
 #### Options
 | Name      | Default | Description |
 |-----------|---------|-------------|
-| `--data` | `./datasets`   | The location where the datasets used in the code are stored.  |
-| `--dataset-name` | `cifar10`   | Dataset name.  |
+| `-data` | `./datasets`   | The location where the datasets used in the code are stored.  |
+| `-dataset-name` | `cifar10`   | Dataset name.  |
 | `--lr` | `1.0`   | learning rate used in the model. |
 | `--log-every-n-steps` | `1`   | Log the infomation every n steps. |
 | `--temperature` | `0.5`   | The temperature used for InfoNCE. |
