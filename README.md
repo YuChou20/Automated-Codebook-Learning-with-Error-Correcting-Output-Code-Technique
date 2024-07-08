@@ -32,7 +32,7 @@ This study utilizes four datasets: [CIFAR-10](https://www.tensorflow.org/dataset
 ## Quick Start
 Quick Start provides example commands for training different models and lists some of the more important options. For additional settings, you can adjust the experimental configurations according to the available options in the options section of the code.
 
-### ACL model pre-training
+### ACL, ACL-CFPC model pre-training
 #### Example
 
 ```python
