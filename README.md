@@ -26,6 +26,9 @@ $ python run.py
 * `acl_tfc_testing.py`: This file is used to evaluate the performance of the ACL-TFC model. Model training must be completed using `acl_tfc_training.py` to obtain the trained model weight before evaluating its performance.
 
 
+## Datasets
+This study utilizes four datasets: [CIFAR-10](https://www.tensorflow.org/datasets/catalog/cifar10), [MNIST](https://www.tensorflow.org/datasets/catalog/mnist), [Fashion-MNIST](https://www.tensorflow.org/datasets/catalog/fashion_mnist), and [GTSRB](https://www.tensorflow.org/datasets/catalog/visual_domain_decathlon). There is no need to manually download these datasets before running the program; all datasets will be automatically downloaded during program execution. The default path for the datasets is "./datasets". Please create the corresponding folder before running any programs.
+
 ## Config file
 
 Before running SimCLR, make sure you choose the correct running configurations. You can change the running configurations by passing keyword arguments to the ```run.py``` file.
