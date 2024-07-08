@@ -66,6 +66,24 @@ $ python acl_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 2
 | `-folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
 | `--epochs` | `200`   | The number of total epochs to run for model training in finetuning phase. |
 
+### ACL Model finetuning (Testing)
+#### Example
+
+```python
+$ python acl_finetune_testing.py -folder_name cifar10-simclr-code100 --attack_type FGSM 
+```
+
+#### Options
+| Name      | Default | Description |
+|-----------|---------|-------------|
+| `-folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
+| `-weight_name` | `(CE+HL+RSL)acl_best_checkpoint_1.pth.tar`   | The name of the model weights to be evaluated. |
+| `--max_iter` | `200`   | Max iteration for PGD attack.  |
+| `--epsilon` | `0.031`   | $\epsilon$ in FGSM and PGD attack.  |
+| `--eps_step` | `0.01`   | $\alpha$ in PGD attack. |
+
+
+
 ### ACL-CFPC Model finetuning (Training)
 #### Example
 
@@ -84,15 +102,18 @@ $ python acl_cfpc_finetune_training.py -folder_name cifar10-simclr-code100 --epo
 #### Example
 
 ```python
-$ python acl_tfc_training.py -folder_name cifar10-simclr-code100 --epochs 2000 -learned_codebook (CE+HL+RSL)cifar10_100bits_codebooks.npy
+$ python acl_tfc_training.py -folder_name cifar10-simclr-code100 -dataset_name cifar10 --epochs 2000 -learned_codebook (CE+HL+RSL)cifar10_100bits_codebooks.npy --code_dim 100
 ```
 
 #### Options
 | Name      | Default | Description |
 |-----------|---------|-------------|
 | `-folder_name` | `cifar10-simclr-code100`   | The storage location for the model weights thereafter.  |
+| `-dataset_name` | `cifar10`   | Dataset name.  <br/> Options: `cifar10`, `mnist`, `fashion-mnist`, `gtsrb`|
 | `--epochs` | `2000`   | The number of total epochs to run for model training. |
 | `-learned_codebook` | `(CE+HL+RSL)cifar10_100bits_codebooks.npy`   | Learned codebook generated from ACL-CFPC model. |
+| `--code_dim` | `100`   | The length of each codeword. |
+| `--temperature` | `0.5`   | The temperature used for InfoNCE. |
 > [!WARNING]  
 > The length of the codewords in learned codebook must match to the arch of the ACL-TFC model.
 
