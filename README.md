@@ -78,6 +78,7 @@ $ python acl_finetune_testing.py --folder_name cifar10-simclr-code100 --attack_t
 |-----------|---------|-------------|
 | `--folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
 | `--weight_name` | `(CE+HL+RSL)acl_best_checkpoint_1.pth.tar`   | The name of the model weights to be evaluated. |
+| `--attack_type` | `FGSM`   | The method be used to generate adversarial examples. <br> Options: `FGSM`, `PGD`. |
 | `--max_iter` | `200`   | Max iteration for PGD attack.  |
 | `--epsilon` | `0.031`   | $\epsilon$ in FGSM and PGD attack.  |
 | `--eps_step` | `0.01`   | $\alpha$ in PGD attack. |
@@ -108,6 +109,7 @@ $ python acl_cfpc_finetune_testing.py --folder_name cifar10-simclr-code100 --att
 |-----------|---------|-------------|
 | `--folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
 | `--weight_name` | `(CE+HL+RSL)acl_cfpc_best_checkpoint_1.pth.tar`   | The name of the model weights to be evaluated. |
+| `--attack_type` | `FGSM`   | The method be used to generate adversarial examples. <br> Options: `FGSM`, `PGD`. |
 | `--max_iter` | `200`   | Max iteration for PGD attack.  |
 | `--epsilon` | `0.031`   | $\epsilon$ in FGSM and PGD attack.  |
 | `--eps_step` | `0.01`   | $\alpha$ in PGD attack. |
@@ -143,6 +145,7 @@ $ python acl_tfc_testing.py --folder_name cifar10-simclr-code100 --attack_type F
 |-----------|---------|-------------|
 | `--folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
 | `--weight_name` | `(CE+HL+RSL)acl_best_checkpoint_1.pth.tar`   | The name of the model weights to be evaluated. |
+| `--attack_type` | `FGSM`   | The method be used to generate adversarial examples. <br> Options: `FGSM`, `PGD`. |
 | `--max_iter` | `200`   | Max iteration for PGD attack.  |
 | `--epsilon` | `0.031`   | $\epsilon$ in FGSM and PGD attack.  |
 | `--eps_step` | `0.01`   | $\alpha$ in PGD attack. |
