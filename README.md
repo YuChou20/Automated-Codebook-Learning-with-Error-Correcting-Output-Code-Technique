@@ -55,7 +55,7 @@ $ python3 run.py --dataset-name cifar10 --epochs 2000 --model_type acl --csl_lam
 #### Example
 
 ```python
-$ python3 acl_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 
+$ python3 acl_finetune_training.py --folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 
 ```
 
 #### Options
