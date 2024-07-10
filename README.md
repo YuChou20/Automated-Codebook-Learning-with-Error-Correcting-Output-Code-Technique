@@ -15,7 +15,6 @@ WORKDIR /home/
 
 RUN pip install tensorboard
 RUN pip install matplotlib
-
 RUN pip install torchvision
 ```
 
