@@ -14,7 +14,6 @@ import argparse
 import logging
 from models.resnet_ecoc_simclr import ResNetECOCSimCLR
 from torch.utils.tensorboard import SummaryWriter
-import faiss
 import AdversarialAttackCleverHans_ecoc
 import torch.nn.functional as F
 import torch.nn as nn
