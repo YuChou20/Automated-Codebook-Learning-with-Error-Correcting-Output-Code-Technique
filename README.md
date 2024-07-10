@@ -85,7 +85,7 @@ $ python3 acl_finetune_testing.py --folder_name cifar10-simclr-code100 --attack_
 #### Example
 
 ```python
-$ python3 acl_cfpc_finetune_training.py --folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 --learned_codebook_name (CE+HL+RSL)cifar10_100bits_codebooks
+$ python3 acl_cfpc_finetune_training.py --folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 --learned_codebook_name cifar10_100bits_codebooks
 ```
 
 #### Options
@@ -93,7 +93,7 @@ $ python3 acl_cfpc_finetune_training.py --folder_name cifar10-simclr-code100 --e
 |-----------|---------|-------------|
 | `--folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
 | `--epochs` | `200`   | The number of total epochs to run for model training in finetuning phase. |
-| `--learned_codebook_name` | `(CE+HL+RSL)cifar10_100bits_codebooks`   | Learned codebook name generated from ACL-CFPC model. |
+| `--learned_codebook_name` | `cifar10_100bits_codebooks`   | Learned codebook name generated from ACL-CFPC model. |
 
 ### ACL-CFPC Model finetuning (Testing)
 #### Example
@@ -116,7 +116,7 @@ $ python3 acl_cfpc_finetune_testing.py --folder_name cifar10-simclr-code100 --at
 #### Example
 
 ```python
-$ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name cifar10 --epochs 2000 -learned_codebook (CE+HL+RSL)cifar10_100bits_codebooks.npy --code_dim 100
+$ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name cifar10 --epochs 2000 -learned_codebook cifar10_100bits_codebooks.npy --code_dim 100
 ```
 
 #### Options
@@ -125,7 +125,7 @@ $ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_nam
 | `--folder_name` | `cifar10-simclr-code100`   | The storage location for the model weights thereafter.  |
 | `--dataset_name` | `cifar10`   | Dataset name.  <br/> Options: `cifar10`, `mnist`, `fashion-mnist`, `gtsrb`|
 | `--epochs` | `2000`   | The number of total epochs to run for model training. |
-| `--learned_codebook` | `(CE+HL+RSL)cifar10_100bits_codebooks.npy`   | Learned codebook generated from ACL-CFPC model. |
+| `--learned_codebook` | `cifar10_100bits_codebooks.npy`   | Learned codebook generated from ACL-CFPC model. |
 | `--code_dim` | `100`   | The length of each codeword. |
 | `--temperature` | `0.5`   | The temperature used for InfoNCE. |
 > [!WARNING]  
