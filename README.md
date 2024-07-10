@@ -3,10 +3,20 @@
 Error Correcting Output Codes (ECOC) is a technique for solving multi-class classification problems. Its core concept involves designing a codebook: each class maps to a unique codeword; these codewords are treated as labels for model training. Thus, the design of the codebook is crucial. In past research, codebooks were often manually designed based on known encoding techniques or generated randomly. However, these methods require manual codebook design before model training, and there may be better choices of codebooks for the given datasets. This research proposes three automated codebook learning models ACL, ACL-CFPC and ACL-TFC for ECOC based on the framework of contrastive learning. These models do not require manual codebook design before training, and the model automatically learns the codebook based on the dataset's characteristics. 
 
 The research also provides two baseline model, Simple and SimCLR for comparison. More detailed content is written in the master's thesis.
-## Installation
 
+## Environment settings
+The experimental environment required for this research can be built through the provided dockerfile.
 ```
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu20.04
 
+MAINTAINER yu
+
+WORKDIR /home/
+
+RUN pip install tensorboard
+RUN pip install matplotlib
+
+RUN pip install torchvision
 ```
 
 ## Main File Description
