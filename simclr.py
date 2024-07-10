@@ -10,7 +10,6 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from utils import save_config_file, accuracy, save_checkpoint
 from torchvision.transforms import Resize
-import faiss
 import copy
 
 torch.manual_seed(0)
