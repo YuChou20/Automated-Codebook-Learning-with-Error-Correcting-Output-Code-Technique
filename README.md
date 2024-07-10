@@ -34,7 +34,7 @@ Quick Start provides example commands for training different models and lists so
 #### Example
 
 ```python
-$ python run.py --dataset-name cifar10 --epochs 2000 --model_type acl --csl_lambda 0.001 --code_dim 100 --save_weight_every_n_steps 100
+$ python3 run.py --dataset-name cifar10 --epochs 2000 --model_type acl --csl_lambda 0.001 --code_dim 100 --save_weight_every_n_steps 100
 ```
 
 #### Options
@@ -55,7 +55,7 @@ $ python run.py --dataset-name cifar10 --epochs 2000 --model_type acl --csl_lamb
 #### Example
 
 ```python
-$ python acl_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 
+$ python3 acl_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 
 ```
 
 #### Options
@@ -68,7 +68,7 @@ $ python acl_finetune_training.py -folder_name cifar10-simclr-code100 --epochs 2
 #### Example
 
 ```python
-$ python acl_finetune_testing.py --folder_name cifar10-simclr-code100 --attack_type FGSM 
+$ python3 acl_finetune_testing.py --folder_name cifar10-simclr-code100 --attack_type FGSM 
 ```
 
 #### Options
@@ -85,7 +85,7 @@ $ python acl_finetune_testing.py --folder_name cifar10-simclr-code100 --attack_t
 #### Example
 
 ```python
-$ python acl_cfpc_finetune_training.py --folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 --learned_codebook_name (CE+HL+RSL)cifar10_100bits_codebooks
+$ python3 acl_cfpc_finetune_training.py --folder_name cifar10-simclr-code100 --epochs 200 --pretrain_epochs 1800 --learned_codebook_name (CE+HL+RSL)cifar10_100bits_codebooks
 ```
 
 #### Options
@@ -99,7 +99,7 @@ $ python acl_cfpc_finetune_training.py --folder_name cifar10-simclr-code100 --ep
 #### Example
 
 ```python
-$ python acl_cfpc_finetune_testing.py --folder_name cifar10-simclr-code100 --attack_type FGSM 
+$ python3 acl_cfpc_finetune_testing.py --folder_name cifar10-simclr-code100 --attack_type FGSM 
 ```
 
 #### Options
@@ -116,7 +116,7 @@ $ python acl_cfpc_finetune_testing.py --folder_name cifar10-simclr-code100 --att
 #### Example
 
 ```python
-$ python acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name cifar10 --epochs 2000 -learned_codebook (CE+HL+RSL)cifar10_100bits_codebooks.npy --code_dim 100
+$ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name cifar10 --epochs 2000 -learned_codebook (CE+HL+RSL)cifar10_100bits_codebooks.npy --code_dim 100
 ```
 
 #### Options
@@ -135,7 +135,7 @@ $ python acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name
 #### Example
 
 ```python
-$ python acl_tfc_testing.py --folder_name cifar10-simclr-code100 --attack_type FGSM 
+$ python3 acl_tfc_testing.py --folder_name cifar10-simclr-code100 --attack_type FGSM 
 ```
 
 #### Options
