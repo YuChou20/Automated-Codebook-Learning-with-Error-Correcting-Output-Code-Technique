@@ -10,5 +10,6 @@ RUN set -xe \
 RUN pip install --upgrade pip
 RUN pip install tensorboard
 RUN pip install matplotlib
+RUN pip install torch==2.2.1 torchvision==0.17.1 torchaudio==2.2.1
 
 COPY ./ ./
