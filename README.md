@@ -116,7 +116,7 @@ $ python3 acl_cfpc_finetune_testing.py --folder_name cifar10-simclr-code100 --at
 #### Example
 
 ```python
-$ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name cifar10 --epochs 2000 -learned_codebook cifar10_100bits_codebooks.npy --code_dim 100
+$ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name cifar10 --epochs 2000 --learned_codebook cifar10_100bits_codebooks.npy --code_dim 100
 ```
 
 #### Options
