@@ -68,7 +68,7 @@ $ python3 acl_finetune_training.py --folder_name cifar10-simclr-code100 --epochs
 #### Example
 
 ```python
-$ python3 acl_finetune_testing.py --folder_name cifar10-simclr-code100 --attack_type FGSM 
+$ python3 acl_finetune_testing.py --folder_name cifar10-simclr-code100 --attack_type FGSM
 ```
 
 #### Options
