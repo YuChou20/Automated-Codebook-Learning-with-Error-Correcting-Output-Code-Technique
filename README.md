@@ -53,6 +53,7 @@ $ python3 run.py --dataset-name cifar10 --epochs 2000 --model_type acl --csl_lam
 | `--data` | `./datasets`   | The location where the datasets used in the code are stored.  |
 | `--dataset-name` | `cifar10`   | Dataset name.  <br/> Options: `cifar10`, `mnist`, `fashion-mnist`, `gtsrb`|
 | `--lr` | `1.0`   | learning rate used in the model. |
+| `--batch_size` | `256`   |  Batch size used in the model. |
 | `--log-every-n-steps` | `1`   | Log the infomation every n steps. |
 | `--temperature` | `0.5`   | The temperature used for InfoNCE. |
 | `--epochs` | `2000`   | The number of total epochs to run for model training. |
@@ -128,7 +129,7 @@ $ python3 acl_cfpc_finetune_testing.py --folder_name cifar10-simclr-code100 --we
 #### Example
 
 ```python
-$ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name cifar10 --epochs 2000 --learned_codebook cifar10_100bits_codebooks.npy --code_dim 100
+$ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name cifar10 --batch_size 256 --epochs 2000 --learned_codebook cifar10_100bits_codebooks.npy --code_dim 100
 ```
 
 #### Options
@@ -136,6 +137,7 @@ $ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_nam
 |-----------|---------|-------------|
 | `--folder_name` | `cifar10-simclr-code100`   | The storage location for the model weights thereafter.  |
 | `--dataset_name` | `cifar10`   | Dataset name.  <br/> Options: `cifar10`, `mnist`, `fashion-mnist`, `gtsrb`|
+| `--batch_size` | `256`   |  Batch size used in the model. |
 | `--epochs` | `2000`   | The number of total epochs to run for model training. |
 | `--learned_codebook` | `cifar10_100bits_codebooks.npy`   | Learned codebook generated from ACL-CFPC model. |
 | `--code_dim` | `100`   | The length of each codeword. |
