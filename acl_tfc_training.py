@@ -30,6 +30,11 @@ parser.add_argument('--folder_name', default='cifar10-simclr-code100',
                     help='model file name')
 parser.add_argument('--dataset_name', default='cifar10',
                     help='dataset name', choices=['stl10', 'cifar10', 'mnist', 'fashion-mnist', 'gtsrb'])
+parser.add_argument('-b', '--batch_size', default=256, type=int,
+                    metavar='N',
+                    help='mini-batch size (default: 256), this is the total '
+                         'batch size of all GPUs on the current node when '
+                         'using Data Parallel or Distributed Data Parallel')
 parser.add_argument('--epochs', default=2000, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
@@ -275,15 +280,15 @@ if __name__ == '__main__':
 
   # Load dataset to loader
   if args.dataset_name == 'cifar10':
-    codeword_gen_loader, train_loader, val_loader, test_loader = get_cifar10_data_loaders(download=True)
+    codeword_gen_loader, train_loader, val_loader, test_loader = get_cifar10_data_loaders(download=True,batch_size=args.batch_size)
   elif args.dataset_name == 'stl10':
-    train_loader, test_loader = get_stl10_data_loaders(download=True)
+    train_loader, test_loader = get_stl10_data_loaders(download=True,batch_size=args.batch_size)
   elif args.dataset_name == 'mnist':
-    codeword_gen_loader, train_loader, val_loader, test_loader = get_mnist_data_loaders(download=True)
+    codeword_gen_loader, train_loader, val_loader, test_loader = get_mnist_data_loaders(download=True,batch_size=args.batch_size)
   elif args.dataset_name == 'fashion-mnist':
-    codeword_gen_loader, train_loader, val_loader, test_loader = get_fashion_mnist_data_loaders(download=True)
+    codeword_gen_loader, train_loader, val_loader, test_loader = get_fashion_mnist_data_loaders(download=True,batch_size=args.batch_size)
   elif args.dataset_name == 'gtsrb':
-    codeword_gen_loader, train_loader, val_loader, test_loader = get_gtsrb_data_loaders(download=True)
+    codeword_gen_loader, train_loader, val_loader, test_loader = get_gtsrb_data_loaders(download=True,batch_size=args.batch_size)
   print("Dataset:", args.dataset_name)
   
   requires_grad_list = ['ecoc_encoder.0.weight', 'ecoc_encoder.0.bias']
