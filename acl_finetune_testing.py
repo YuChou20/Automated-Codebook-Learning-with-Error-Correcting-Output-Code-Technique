@@ -28,6 +28,11 @@ model_names = sorted(name for name in models.__dict__
 parser = argparse.ArgumentParser(description='PyTorch SimCLR')
 parser.add_argument('--folder_name', default='cifar10-simclr-code100',
                     help='model file name')
+parser.add_argument('-b', '--batch_size', default=256, type=int,
+                    metavar='N',
+                    help='mini-batch size (default: 256), this is the total '
+                         'batch size of all GPUs on the current node when '
+                         'using Data Parallel or Distributed Data Parallel')
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                     choices=model_names, 
                     help='model architecture: ' +
@@ -249,15 +254,15 @@ if __name__ == '__main__':
 
   # Load dataset to loader
   if config.dataset_name == 'cifar10':
-    codeword_gen_loader, train_loader, val_loader, test_loader = get_cifar10_data_loaders(download=True)
+    codeword_gen_loader, train_loader, val_loader, test_loader = get_cifar10_data_loaders(download=True,batch_size=args.batch_size)
   elif config.dataset_name == 'stl10':
-    train_loader, test_loader = get_stl10_data_loaders(download=True)
+    train_loader, test_loader = get_stl10_data_loaders(download=True,batch_size=args.batch_size)
   elif config.dataset_name == 'mnist':
-    codeword_gen_loader, train_loader, test_loader = get_mnist_data_loaders(download=True)
+    codeword_gen_loader, train_loader, test_loader = get_mnist_data_loaders(download=True,batch_size=args.batch_size)
   elif config.dataset_name == 'fashion-mnist':
-    codeword_gen_loader, train_loader, test_loader = get_fashion_mnist_data_loaders(download=True)
+    codeword_gen_loader, train_loader, test_loader = get_fashion_mnist_data_loaders(download=True,batch_size=args.batch_size)
   elif config.dataset_name == 'gtsrb':
-    codeword_gen_loader, train_loader, test_loader = get_gtsrb_data_loaders(download=True)
+    codeword_gen_loader, train_loader, test_loader = get_gtsrb_data_loaders(download=True,batch_size=args.batch_size)
   print("Dataset:", config.dataset_name)
   
 
