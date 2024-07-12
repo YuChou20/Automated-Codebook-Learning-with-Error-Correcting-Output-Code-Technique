@@ -133,7 +133,7 @@ $ python3 acl_cfpc_finetune_testing.py --folder_name cifar10-simclr-code100 --we
 #### Example
 
 ```python
-$ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name cifar10 --batch_size 256 --epochs 2000 --learned_codebook cifar10_100bits_codebooks.npy --code_dim 100
+$ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_name cifar10 --batch_size 128 --epochs 2000 --learned_codebook cifar10_100bits_codebooks.npy --code_dim 100
 ```
 
 #### Options
@@ -153,7 +153,7 @@ $ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_nam
 #### Example
 
 ```python
-$ python3 acl_tfc_testing.py --folder_name cifar10-simclr-code100 --weight_name acl_tfc_best_checkpoint_1.pth.tar --attack_type FGSM 
+$ python3 acl_tfc_testing.py --folder_name cifar10-simclr-code100 --batch_size 128 --weight_name acl_tfc_best_checkpoint_1.pth.tar --attack_type FGSM 
 ```
 
 #### Options
