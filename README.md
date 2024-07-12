@@ -73,19 +73,20 @@ $ python3 acl_finetune_training.py --folder_name cifar10-simclr-code100 --epochs
 |-----------|---------|-------------|
 | `--folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
 | `--epochs` | `200`   | The number of total epochs to run for model training in finetuning phase. |
+| `--pretrain_epochs` | `1800`   | The epochs of the pre-trained model. The system will automatically access the pre-trained weight files using the default naming convention. |
 
 ### ACL Model finetuning (Testing)
 #### Example
 
 ```python
-$ python3 acl_finetune_testing.py --folder_name cifar10-simclr-code100 --attack_type FGSM
+$ python3 acl_finetune_testing.py --folder_name cifar10-simclr-code100 --weight_name acl_best_checkpoint_1.pth.tar --attack_type FGSM
 ```
 
 #### Options
 | Name      | Default | Description |
 |-----------|---------|-------------|
 | `--folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
-| `--weight_name` | `(CE+HL+RSL)acl_best_checkpoint_1.pth.tar`   | The name of the model weights to be evaluated. |
+| `--weight_name` | `acl_best_checkpoint_1.pth.tar`   | The name of the model weights to be evaluated. |
 | `--attack_type` | `FGSM`   | The method be used to generate adversarial examples. <br> Options: `FGSM`, `PGD`. |
 | `--max_iter` | `200`   | Max iteration for PGD attack.  |
 | `--epsilon` | `0.031`   | $\epsilon$ in FGSM and PGD attack.  |
@@ -109,14 +110,14 @@ $ python3 acl_cfpc_finetune_training.py --folder_name cifar10-simclr-code100 --e
 #### Example
 
 ```python
-$ python3 acl_cfpc_finetune_testing.py --folder_name cifar10-simclr-code100 --attack_type FGSM 
+$ python3 acl_cfpc_finetune_testing.py --folder_name cifar10-simclr-code100 --weight_name acl_cfpc_best_checkpoint_1.pth.tar --attack_type FGSM
 ```
 
 #### Options
 | Name      | Default | Description |
 |-----------|---------|-------------|
 | `--folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
-| `--weight_name` | `(CE+HL+RSL)acl_cfpc_best_checkpoint_1.pth.tar`   | The name of the model weights to be evaluated. |
+| `--weight_name` | `acl_cfpc_best_checkpoint_1.pth.tar`   | The name of the model weights to be evaluated. |
 | `--attack_type` | `FGSM`   | The method be used to generate adversarial examples. <br> Options: `FGSM`, `PGD`. |
 | `--max_iter` | `200`   | Max iteration for PGD attack.  |
 | `--epsilon` | `0.031`   | $\epsilon$ in FGSM and PGD attack.  |
@@ -145,14 +146,14 @@ $ python3 acl_tfc_training.py --folder_name cifar10-simclr-code100 --dataset_nam
 #### Example
 
 ```python
-$ python3 acl_tfc_testing.py --folder_name cifar10-simclr-code100 --attack_type FGSM 
+$ python3 acl_tfc_testing.py --folder_name cifar10-simclr-code100 --weight_name acl_tfc_best_checkpoint_1.pth.tar --attack_type FGSM 
 ```
 
 #### Options
 | Name      | Default | Description |
 |-----------|---------|-------------|
 | `--folder_name` | `cifar10-simclr-code100`   | Pre-trained model weights storage location and storage location for fine-tuning model weights thereafter.  |
-| `--weight_name` | `(CE+HL+RSL)acl_best_checkpoint_1.pth.tar`   | The name of the model weights to be evaluated. |
+| `--weight_name` | `acl_tfc_best_checkpoint_1.pth.tar`   | The name of the model weights to be evaluated. |
 | `--attack_type` | `FGSM`   | The method be used to generate adversarial examples. <br> Options: `FGSM`, `PGD`. |
 | `--max_iter` | `200`   | Max iteration for PGD attack.  |
 | `--epsilon` | `0.031`   | $\epsilon$ in FGSM and PGD attack.  |
