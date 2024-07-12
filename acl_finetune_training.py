@@ -387,7 +387,7 @@ if __name__ == '__main__':
     logging.info(f"Epoch {epoch}\tTop1 Train accuracy {top1_train_accuracy.item()}\tTop1 val accuracy: {val_top1_accuracy.item()}\tTop5 val acc: {val_top5_accuracy.item()}\tTop1 Test accuracy: {top1_accuracy.item()}\tTop5 test acc: {top5_accuracy.item()}")
     print(f"Epoch {epoch}\tTop1 Train accuracy {top1_train_accuracy.item()}\tTop1 val accuracy: {val_top1_accuracy.item()}\tTop5 val acc: {val_top5_accuracy.item()}\tTop1 Test accuracy: {top1_accuracy.item()}\tTop5 test acc: {top5_accuracy.item()}")
     
-  checkpoint_name = '({0})acl_best_checkpoint_{1}.pth.tar'.format(args.loss_type, best_epoch)
+  checkpoint_name = 'acl_best_checkpoint_{0}.pth.tar'.format(best_epoch)
   save_checkpoint({
       'epoch': best_epoch,
       'arch': args.arch,
