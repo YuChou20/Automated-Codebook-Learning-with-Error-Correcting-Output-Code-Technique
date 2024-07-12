@@ -42,7 +42,7 @@ Quick Start provides example commands for training different models and lists so
 
 ### ACL, ACL-CFPC model pre-training
 #### Example
-
+After executing run.py, the system will automatically create a folder and save the model's configuration file as well as the weight file. In subsequent model fine-tuning training and testing, this folder must be specified to load the model's weight file and continue training and testiong based on it.
 ```python
 $ python3 run.py --dataset-name cifar10 --epochs 2000 --model_type acl --csl_lambda 0.001 --code_dim 100 --save_weight_every_n_steps 100
 ```
